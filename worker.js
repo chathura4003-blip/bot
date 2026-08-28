@@ -25,12 +25,21 @@ if (!fs.existsSync(config.DOWNLOAD_DIR)) {
   fs.mkdirSync(config.DOWNLOAD_DIR, { recursive: true });
 }
 
-// Health check endpoint
+const { workerMetrics } = require('./lib/worker-metrics');
+const { getWorkerDashboardHTML } = require('./lib/worker-dashboard-html');
+
+// Live Speed Dashboard & Health check endpoints
 app.get('/', (req, res) => {
+  if (req.query.json === 'true' || (req.headers.accept && req.headers.accept.includes('application/json') && !req.headers.accept.includes('text/html'))) {
+    return res.json(workerMetrics.getSnapshot());
+  }
+  res.send(getWorkerDashboardHTML());
+});
+
+app.get('/health', (req, res) => {
   res.json({
     status: 'online',
     service: 'CHATHU-MD Cloud Media Worker',
-    mode: 'Pure Stream Worker (0 MB PC Data)',
     uptime: `${Math.floor(process.uptime())}s`,
     memoryMB: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
     ytDlpAvailable: fs.existsSync(getBinPath()),
