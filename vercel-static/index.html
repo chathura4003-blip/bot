@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Chathu MD V4.2 · Not Runnable on Vercel</title>
+  <meta name="description" content="Chathu MD V4.2 is a persistent WhatsApp bot process and cannot run on Vercel serverless functions. Deploy it to Render or Railway instead." />
+  <meta name="theme-color" content="#0a0e14" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e14;
+      --surface: #10161f;
+      --border: #1f2733;
+      --foreground: #e6ebf0;
+      --muted: #8b96a5;
+      --accent: #22c55e;
+      --accent-dim: rgba(34, 197, 94, 0.14);
+      --warn: #f0b429;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body {
+      min-height: 100vh;
+      font-family: var(--font-sans);
+      color: var(--foreground);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      line-height: 1.6;
+    }
+    .wrap {
+      width: 100%;
+      max-width: 640px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--warn);
+      background: rgba(240, 180, 41, 0.1);
+      border: 1px solid rgba(240, 180, 41, 0.28);
+      border-radius: 999px;
+      padding: 6px 14px;
+      margin-bottom: 24px;
+    }
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--warn);
+      box-shadow: 0 0 0 0 rgba(240, 180, 41, 0.6);
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(240, 180, 41, 0.55); }
+      70% { box-shadow: 0 0 0 8px rgba(240, 180, 41, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(240, 180, 41, 0); }
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .logo svg { width: 20px; height: 20px; }
+    .brand-text h2 {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .brand-text p {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin-bottom: 14px;
+    }
+    .lede {
+      color: var(--muted);
+      font-size: 15px;
+      margin-bottom: 28px;
+      max-width: 54ch;
+    }
+    .reasons {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+    }
+    .reasons h3 {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .reasons ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .reasons li {
+      display: flex;
+      gap: 10px;
+      font-size: 14px;
+      color: #c3cbd6;
+    }
+    .reasons li svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 14px;
+      padding: 11px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      border: 1px solid transparent;
+      transition: opacity 0.15s ease;
+    }
+    .btn:hover { opacity: 0.88; }
+    .btn-primary {
+      background: var(--accent);
+      color: #06210f;
+    }
+    .btn-secondary {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--foreground);
+    }
+    footer {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+    footer a { color: var(--muted); text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="currentColor" d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h2>Chathu MD V4.2</h2>
+        <p>Multi-Device Control Center</p>
+      </div>
+    </div>
+
+    <div class="badge"><span class="dot"></span>Not running here</div>
+
+    <h1 class="text-balance">This deployment can&apos;t run on Vercel</h1>
+    <p class="lede text-pretty">
+      Chathu MD is a long-running WhatsApp bot with a live socket connection and local
+      session storage. Vercel Functions are stateless and short-lived, so the bot can never
+      stay connected here &mdash; this isn&apos;t a bug to patch, it&apos;s a platform mismatch.
+    </p>
+
+    <div class="reasons">
+      <h3>Why it can&apos;t run as a function</h3>
+      <ul>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span>Keeps a persistent WhatsApp Web socket open 24/7 &mdash; functions terminate after each request.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+          <span>Writes session/auth state to the local filesystem &mdash; Vercel&apos;s filesystem is read-only and ephemeral.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 8-8V2.5"/><path d="M12 22v-1.5a8 8 0 0 0 8-8"/></svg>
+          <span>The live dashboard relies on a persistent socket.io connection for real-time updates.</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="actions">
+      <a class="btn btn-primary" href="https://render.com/deploy?repo=https://github.com/chathura4003-blip/bot" target="_blank" rel="noopener noreferrer">
+        Deploy to Render
+      </a>
+      <a class="btn btn-secondary" href="https://github.com/chathura4003-blip/bot" target="_blank" rel="noopener noreferrer">
+        View source on GitHub
+      </a>
+    </div>
+
+    <footer>
+      Render blueprint (render.yaml) and Docker image are already configured in this repo &mdash;
+      one-click deploy provisions the web service and persistent session disk automatically.
+    </footer>
+  </main>
+</body>
+</html>
