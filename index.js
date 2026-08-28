@@ -122,9 +122,24 @@ process.on('unhandledRejection', (reason) => {
 const { validateConfig } = require('./lib/config-validation');
 const runtimeConfig = require('./config');
 const { startDashboard } = require('./dashboard');
-const { startBot } = require('./bot');
+const { startBot, stopBot } = require('./bot');
 const sessionManager = require('./session-manager');
 const { ensureYtdlp } = require('./lib/ytdlp-manager');
+const { startMemoryOptimizer } = require('./lib/memory-optimizer');
+
+let isShuttingDown = false;
+async function gracefulShutdown(signal) {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    logger(`[System] Received ${signal}. Shutting down cleanly...`);
+    try {
+        await stopBot({ status: 'Offline' }).catch(() => {});
+    } catch (_) {}
+    setTimeout(() => process.exit(0), 1000).unref();
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 async function main() {
     try {
@@ -135,6 +150,9 @@ async function main() {
         }
         logger('Initializing dashboard and bots...');
         
+        // Start background memory manager and automatic garbage collector
+        startMemoryOptimizer();
+
         // Ensure yt-dlp binary is ready in background
         ensureYtdlp().catch(() => {});
 

@@ -361,56 +361,48 @@ function resolveMessageTargets(rawTargets) {
     return resolveTargets('custom', rawTargets);
 }
 
-// ── Network & CPU stats tracker ──────────────────────────────────────────────────
+// ── Network & CPU stats tracker (Ultra-low overhead native calculation) ───────
 let netSpeedRx = 0, netSpeedTx = 0;
 let netTotalRx = 0, netTotalTx = 0;
 let currentCpuLoad = 0;
-let lastRx = 0, lastTx = 0, lastTime = 0;
+let prevCpuTimes = null;
+
+function calculateNativeCpuLoad() {
+    try {
+        const cpus = os.cpus();
+        if (!Array.isArray(cpus) || cpus.length === 0) return 0;
+        let totalIdle = 0, totalTick = 0;
+        for (const cpu of cpus) {
+            for (const type in cpu.times) {
+                totalTick += cpu.times[type];
+            }
+            totalIdle += cpu.times.idle;
+        }
+        if (!prevCpuTimes) {
+            prevCpuTimes = { idle: totalIdle, total: totalTick };
+            return 0;
+        }
+        const idleDiff = totalIdle - prevCpuTimes.idle;
+        const totalDiff = totalTick - prevCpuTimes.total;
+        prevCpuTimes = { idle: totalIdle, total: totalTick };
+        if (totalDiff <= 0) return currentCpuLoad;
+        const loadPercent = Math.min(100, Math.max(0, 100 - (100 * idleDiff / totalDiff)));
+        return Math.round(loadPercent * 10) / 10;
+    } catch (_) {
+        return 0;
+    }
+}
 
 async function updateStats() {
     try {
-        const net = await si.networkStats();
-        if (net && net.length > 0) {
-            let tr = 0, tt = 0;
-            const now = Date.now();
-            const elapsed = (now - lastTime) / 1000;
-
-            // Use the primary/default interface if possible, or aggregate active ones
-            const active = net.find(i => i.operstate === 'up' && i.iface !== 'lo') || net[0];
-            if (active) {
-                tr = active.rx_bytes || 0;
-                tt = active.tx_bytes || 0;
-            }
-
-            if (lastTime > 0 && elapsed > 0) {
-                netSpeedRx = Math.max(0, (tr - lastRx) / elapsed);
-                netSpeedTx = Math.max(0, (tt - lastTx) / elapsed);
-            }
-
-            netTotalRx = tr;
-            netTotalTx = tt;
-            lastRx = tr;
-            lastTx = tt;
-            lastTime = now;
-        }
-
-        const load = await si.currentLoad();
-        currentCpuLoad = load.currentLoad || 0;
-    } catch (e) { console.error('Stats error:', e.message); }
+        currentCpuLoad = calculateNativeCpuLoad();
+    } catch (e) { }
 }
 
-// systeminformation calls (networkStats / currentLoad) hit /proc on every
-// tick — that's pretty expensive on shared/free-tier hosts. We do one
-// initial fetch so first dashboard load has data, then poll every 10s, and
-// skip the poll entirely when nobody is watching the dashboard. This
-// reclaims a noticeable chunk of CPU on idle bots running on Railway /
-// Render free plans.
+// Low overhead native timer: only updates CPU metrics when someone is watching dashboard
 const STATS_INTERVAL_MS = Math.max(2000, Number.parseInt(process.env.DASHBOARD_STATS_INTERVAL_MS, 10) || 10000);
 updateStats();
 const statsTimer = setInterval(() => {
-    // io is created a few lines below; guard with optional chaining so the
-    // very first tick (which runs synchronously above) is the only one
-    // without io available.
     const clientCount = io?.engine?.clientsCount || 0;
     if (clientCount === 0) return;
     updateStats();
