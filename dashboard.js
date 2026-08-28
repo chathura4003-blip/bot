@@ -561,7 +561,7 @@ const PAGE_IDS = [
 ];
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+    res.sendFile(path.join(__dirname, 'public', 'pages', 'dashboard.html'));
 });
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
