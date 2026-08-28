@@ -124,6 +124,7 @@ const runtimeConfig = require('./config');
 const { startDashboard } = require('./dashboard');
 const { startBot } = require('./bot');
 const sessionManager = require('./session-manager');
+const { ensureYtdlp } = require('./lib/ytdlp-manager');
 
 async function main() {
     try {
@@ -134,6 +135,9 @@ async function main() {
         }
         logger('Initializing dashboard and bots...');
         
+        // Ensure yt-dlp binary is ready in background
+        ensureYtdlp().catch(() => {});
+
         // Start the web dashboard
         await startDashboard();
         
