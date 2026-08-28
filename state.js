@@ -100,6 +100,7 @@ module.exports = {
     isQrPaused: () => _qrPaused,
     incQrAttempts: () => ++_qrAttempts,
     resetQrAttempts: () => { _qrAttempts = 0; },
+    resetReconnectAttempts: () => { _qrAttempts = 0; },
     getQrAttempts: () => _qrAttempts,
     incProcessedCount: () => {
         _processedCount++;
