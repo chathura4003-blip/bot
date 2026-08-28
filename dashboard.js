@@ -560,7 +560,12 @@ const PAGE_IDS = [
     'files', 'viewonce_gallery', 'settings', 'logs',
 ];
 
-app.get('/', (req, res) => res.redirect('/dashboard'));
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
 
 // Health check for Railway/Fly/Render/etc. (no auth, lightweight, always 200
 // when the dashboard process is up). Cloud platforms poll this to decide
