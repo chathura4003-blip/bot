@@ -913,16 +913,10 @@ async function handleMessages(sock, messageBatch, sessionId = '__main__') {
 
     const validMessages = messageBatch.messages.filter(msg => {
         if (!msg.message) return false;
-        const msgTime = getMessageTimestampSec(msg);
-        if (msgTime > 0) {
-            // Drop messages sent before the bot started (allow 15s grace for in-flight requests)
-            const isBeforeBotStart = msgTime < (botStartTime - 15);
-            // Drop messages older than 60 seconds from current real-time clock
-            const isTooOld = (nowSec - msgTime) > 60;
-            if (isBeforeBotStart || isTooOld) {
-                const ageSec = (nowSec - msgTime);
-                const fromJid = msg.key?.remoteJid || 'unknown';
-                logger(`[Skip] Stale message (${msgTime}) from ${fromJid} (age=${ageSec}s)`);
+        // Only drop offline backlog messages ('append'), never drop live 'notify' messages!
+        if (messageBatch.type === 'append') {
+            const msgTime = getMessageTimestampSec(msg);
+            if (msgTime > 0 && (nowSec - msgTime) > 300) {
                 return false;
             }
         }
