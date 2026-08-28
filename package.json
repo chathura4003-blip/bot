@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "node --expose-gc --max-old-space-size=512 --max-semi-space-size=32 index.js",
+    "worker": "node --expose-gc --max-old-space-size=256 worker.js",
     "check": "npm run lint && npm run test",
     "lint": "node scripts/check-syntax.js",
     "test": "node --test",

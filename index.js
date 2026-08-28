@@ -2,6 +2,11 @@ require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 process.env.CHMD_ENV_PRELOADED = 'true';
 process.env.CHMD_ENV_SOURCE = require('path').join(__dirname, '.env');
 
+if (process.env.WORKER_ONLY === 'true' || String(process.env.WORKER_MODE).toLowerCase() === 'true') {
+    require('./worker');
+    return;
+}
+
 // ---------------------------------------------------------------------------
 // Suppress benign Signal/Baileys decryption noise
 // ---------------------------------------------------------------------------
