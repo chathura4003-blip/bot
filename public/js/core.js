@@ -59,7 +59,7 @@ async function navigate(page) {
   const title = document.getElementById('activePageTitle');
   
   try {
-    const res = await fetch(`/tabs/${page}.html`);
+    const res = await fetch(`/pages/${page}.html`);
     if (!res.ok) throw new Error('Page not found');
     
     const html = await res.text();
