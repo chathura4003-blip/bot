@@ -15,3 +15,5 @@ upload_to_github.bat
 yt-dlp.exe
 yt-dlp
 .cache/
+link/
+lib/commands/link/
