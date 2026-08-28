@@ -105,6 +105,8 @@ module.exports = {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",
   GROQ_API_KEY: process.env.GROQ_API_KEY || "",
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || "",
+  CLOUD_WORKER_URL: readString(process.env.CLOUD_WORKER_URL, ""),
+  WORKER_SECRET: readString(process.env.WORKER_SECRET, ""),
   DEFAULT_ADMIN_PASS,
   DEFAULT_JWT_SECRET,
 };

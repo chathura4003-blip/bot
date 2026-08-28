@@ -22,6 +22,7 @@ const { normalizeOwner } = require('./lib/utils');
 const { normalizeSriLankanPhoneNumber } = require('./lib/phone-normalizer');
 const { createSchedulerRuntime } = require('./lib/scheduler-runtime');
 const { getViewOnceLog, removeLogEntry, VIEWONCE_DIR: VO_DIR } = require('./lib/viewonce-capture');
+const { setupWorkerRoutes } = require('./lib/cloud-worker');
 
 const app = express();
 app.set('trust proxy', String(process.env.TRUST_PROXY || '').toLowerCase() === 'true');
@@ -523,6 +524,7 @@ app.use((req, res, next) => {
     next();
 });
 app.use(express.json({ limit: '2mb', strict: true }));
+setupWorkerRoutes(app);
 app.use(express.static(path.join(__dirname, 'public'), {
     index: false,
     dotfiles: 'ignore',
