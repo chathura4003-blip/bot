@@ -538,7 +538,13 @@ async function createSocket(options = {}) {
                     dashboardIO.emit('qr', qrDataUrl);
                     dashboardIO.emit('update', { status: 'Awaiting QR Scan' });
                 }
-                logger(`[Main Bot] QR generated (${attempts}/2). Scan with WhatsApp.`);
+
+                // Print scanable QR code directly in the terminal
+                QRCode.toString(qr, { type: 'terminal', small: true }, (err, terminalQr) => {
+                    if (!err && terminalQr) console.log('\n' + terminalQr);
+                });
+
+                logger(`[Main Bot] QR generated (${attempts}/2). Scan with WhatsApp or open Dashboard: http://localhost:5000`);
 
                 if (attempts >= 2) {
                     logger('[Main Bot] QR pause: too many unscanned codes. Click "Reconnect" to retry.');
