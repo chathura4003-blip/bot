@@ -1,3 +1,12 @@
+---
+title: CHATHU MD Bot
+emoji: 🌸
+colorFrom: purple
+colorTo: blue
+sdk: docker
+app_port: 5000
+---
+
 # 🌸 CHATHU MD Bot — V1.4 🌸
 
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)

@@ -48,4 +48,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 
 EXPOSE 5000
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["node", "--expose-gc", "--max-old-space-size=2048", "--max-semi-space-size=64", "index.js"]
+CMD ["node", "--expose-gc", "--max-old-space-size=512", "--max-semi-space-size=32", "index.js"]
