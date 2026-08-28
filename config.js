@@ -3,6 +3,7 @@
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
+try { require('dotenv').config({ path: path.join(__dirname, '.env') }); } catch (_) {}
 
 const DEFAULT_ADMIN_PASS = "chathura123";
 const DEFAULT_JWT_SECRET = "replace_this_jwt_secret_before_production";
