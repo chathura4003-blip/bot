@@ -505,7 +505,9 @@ async function createSocket(options = {}) {
         shouldSyncHistoryMessage: () => false,
         markOnlineOnConnect: true,
         generateHighQualityLinkPreview: false,
-        retryRequestDelayMs: 150,
+        emitOwnEvents: true,
+        keepAliveIntervalMs: 15000,
+        retryRequestDelayMs: 80,
         cachedGroupMetadata: async (jid) => {
             if (!sock) return undefined;
             const { getGroupMetadataCached } = require('./lib/utils');
@@ -568,15 +570,10 @@ async function createSocket(options = {}) {
             if (connection === 'open') {
                 clearReconnectTimer();
                 logger('[Main Bot] Connected.');
-                sock.startTime = Math.floor(Date.now() / 1000); // Refresh start time on open
                 appState.setStatus('Connected');
-                appState.resetQrAttempts();
+                appState.resetReconnectAttempts();
                 appState.setQrPaused(false);
-                appState.setConnectedAt(new Date().toISOString());
                 appState.setMainQr(null);
-                appState.setMainPairCode(null);
-                appState.setMainPairCodeExpiresAt(null);
-                appState.setMainPairMode(false);
                 appState.setMainPairPhone(null);
 
                 const number = sock.user?.id?.split(':')[0] || sock.user?.id || 'Unknown';
@@ -592,8 +589,11 @@ async function createSocket(options = {}) {
                     return;
                 }
 
-                await syncGroups(sock, '__main__');
-                applyProFeatureLoops(sock, '__main__');
+                // Non-blocking background sync so the bot starts processing live messages instantly (<50ms)
+                setImmediate(() => {
+                    syncGroups(sock, '__main__').catch(() => {});
+                    applyProFeatureLoops(sock, '__main__');
+                });
                 return;
             }
 
