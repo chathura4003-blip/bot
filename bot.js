@@ -594,13 +594,6 @@ async function createSocket(options = {}) {
 
                 await syncGroups(sock, '__main__');
                 applyProFeatureLoops(sock, '__main__');
-
-                // Auto-sync session to Cloud Worker so Cloud Worker can connect and offload media
-                try {
-                    const { pushSessionToCloud } = require('./lib/cloud-worker');
-                    pushSessionToCloud().catch(() => {});
-                } catch (_) {}
-
                 return;
             }
 
