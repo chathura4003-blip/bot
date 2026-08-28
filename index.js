@@ -159,11 +159,14 @@ async function main() {
         // Start the web dashboard
         await startDashboard();
         
-        // Start the main bot
-        await startBot();
-        
-        // Restore any multi-sessions
-        await sessionManager.autoRestore();
+        // Start the main bot (skipped in pure worker mode to avoid session collisions)
+        if (!runtimeConfig.WORKER_ONLY && process.env.WORKER_ONLY !== 'true') {
+            await startBot();
+            // Restore any multi-sessions
+            await sessionManager.autoRestore();
+        } else {
+            logger('[Cloud Worker] Pure Worker Mode active. WhatsApp Bot Socket skipped (0% session collision).');
+        }
         
     } catch (error) {
         if (error?.code === 'EADDRINUSE') {
