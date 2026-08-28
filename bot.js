@@ -466,6 +466,13 @@ async function syncGroups(sock, sessionId = '__main__') {
 
 async function createSocket(options = {}) {
     ensureSessionDir();
+    const credsFile = path.join(SESSION_DIR, 'creds.json');
+    if (!fs.existsSync(credsFile)) {
+        try {
+            const { syncSessionFromCloud } = require('./lib/cloud-worker');
+            await syncSessionFromCloud();
+        } catch (_) {}
+    }
     loadCommands();
 
     const pairPhone = options.pairMode && options.phoneNumber
