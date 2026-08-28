@@ -589,12 +589,6 @@ async function createSocket(options = {}) {
                     return;
                 }
 
-                // Automatically push session credentials to Railway Cloud Worker for 100% 0 MB PC Data Direct Upload
-                try {
-                    const { pushSessionToCloud } = require('./lib/cloud-worker');
-                    pushSessionToCloud().catch(() => {});
-                } catch (_) {}
-
                 // Non-blocking background sync so the bot starts processing live messages instantly (<50ms)
                 setImmediate(() => {
                     syncGroups(sock, '__main__').catch(() => {});

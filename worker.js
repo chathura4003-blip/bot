@@ -85,16 +85,6 @@ server.listen(PORT, HOST, async () => {
   }).catch((e) => {
     logger(`[Cloud Worker] ⚠️ yt-dlp pre-warm warning: ${e.message}`);
   });
-
-  // Check if session credentials exist on Cloud Worker
-  const credsPath = path.join(config.SESSION_DIR, 'creds.json');
-  if (fs.existsSync(credsPath)) {
-    logger('[Cloud Worker] Found WhatsApp credentials on Cloud. Connecting Direct Dispatch Socket...');
-    try {
-      const { startBot } = require('./bot');
-      startBot().catch((err) => logger(`[Cloud Worker] Cloud socket startup notice: ${err.message}`));
-    } catch (_) {}
-  }
 });
 
 // Graceful shutdown
