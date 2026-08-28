@@ -3,7 +3,7 @@ module.exports = {
     {
       name: "chathu-bot",
       script: "index.js",
-      node_args: "--expose-gc --max-old-space-size=1000 --max-semi-space-size=64",
+      node_args: "--expose-gc --max-old-space-size=2048 --max-semi-space-size=64",
       watch: false,
       autorestart: true,
       max_restarts: 10,
