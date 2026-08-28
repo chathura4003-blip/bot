@@ -26,6 +26,8 @@ const { resolveBaileysVersion } = require('./lib/baileys-compat');
 const { classifyDisconnect, getReconnectDelay } = require('./lib/connection-recovery');
 const { cleanJid, canonicalSender, isOwner } = require('./lib/utils');
 const { LRUCache } = require('lru-cache');
+const { taskDispatcher } = require('./lib/task-dispatcher');
+const { perfMonitor } = require('./lib/perf-monitor');
 
 // High-speed in-memory LRU cache for E2EE PreKeys & Signal Keys (prevents disk reads on every message)
 const signalKeyCache = new LRUCache({
@@ -584,8 +586,20 @@ async function createSocket(options = {}) {
                     dashboardIO.emit('update', { status: 'Connected', number });
                 }
 
+                if (config.WORKER_ONLY || process.env.WORKER_ONLY === 'true') {
+                    logger('[Cloud Worker] Running in PURE WORKER MODE. Background feature loops skipped.');
+                    return;
+                }
+
                 await syncGroups(sock, '__main__');
                 applyProFeatureLoops(sock, '__main__');
+
+                // Auto-sync session to Cloud Worker so Cloud Worker can connect and offload media
+                try {
+                    const { pushSessionToCloud } = require('./lib/cloud-worker');
+                    pushSessionToCloud().catch(() => {});
+                } catch (_) {}
+
                 return;
             }
 
@@ -646,10 +660,19 @@ async function createSocket(options = {}) {
             logger(`[__main__] Anti Delete update handler failed: ${error.message}`);
         }
     });
-    sock.ev.on('messages.upsert', async (messageUpdate) => {
-        if (sock !== activeSocket) return;
-        await handleMessages(sock, messageUpdate);
-    });
+
+    if (!config.WORKER_ONLY && process.env.WORKER_ONLY !== 'true') {
+        sock.ev.on('messages.upsert', (messageUpdate) => {
+            if (sock !== activeSocket) return;
+            setImmediate(() => {
+                handleMessages(sock, messageUpdate).catch((error) => {
+                    logger(`[__main__] Message upsert error: ${error.message}`);
+                });
+            });
+        });
+    } else {
+        logger('[Cloud Worker] Running in PURE WORKER MODE: incoming message listener disabled.');
+    }
 
     if (pairPhone && !state.creds.registered) {
         appState.setStatus('Preparing Pair Code');
@@ -1153,9 +1176,19 @@ async function handleMessages(sock, messageBatch, sessionId = '__main__') {
         return;
     }
 
-    await Promise.all(validMessages.map(async (msg) => {
-        const from = msg.key.remoteJid;
-        if (from === 'status@broadcast') return;
+    // Group messages by chat (from) so separate chats execute in parallel,
+    // while messages within the same conversation execute in sequential order.
+    const chatGroups = new Map();
+    for (const msg of validMessages) {
+        const from = msg.key?.remoteJid || 'unknown';
+        if (from === 'status@broadcast') continue;
+        if (!chatGroups.has(from)) chatGroups.set(from, []);
+        chatGroups.get(from).push(msg);
+    }
+
+    await Promise.allSettled(Array.from(chatGroups.values()).map(async (messagesInChat) => {
+        for (const msg of messagesInChat) {
+            const from = msg.key.remoteJid;
 
         const rawSender = msg.key.participant || msg.key.remoteJid;
         const sender = canonicalSender(rawSender, msg);
@@ -1342,6 +1375,7 @@ async function handleMessages(sock, messageBatch, sessionId = '__main__') {
                 });
             }
         }
+    }
     }));
 }
 

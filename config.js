@@ -108,6 +108,7 @@ module.exports = {
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || "",
   CLOUD_WORKER_URL: readString(process.env.CLOUD_WORKER_URL, ""),
   WORKER_SECRET: readString(process.env.WORKER_SECRET, ""),
+  WORKER_ONLY: String(process.env.WORKER_ONLY || "false").toLowerCase() === "true",
   DEFAULT_ADMIN_PASS,
   DEFAULT_JWT_SECRET,
 };

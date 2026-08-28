@@ -762,13 +762,19 @@ async function startSocket(id, entry) {
             }
         });
 
-        sock.ev.on('messages.upsert', async (m) => {
+        sock.ev.on('messages.upsert', (m) => {
             for (const msg of m?.messages || []) {
                 cacheSessionMsg(id, msg);
             }
-            let handleMessages;
-            try { handleMessages = require('./bot').handleMessages; } catch (e) { }
-            if (handleMessages) await handleMessages(sock, m, id);
+            setImmediate(() => {
+                let handleMessages;
+                try { handleMessages = require('./bot').handleMessages; } catch (e) { }
+                if (handleMessages) {
+                    handleMessages(sock, m, id).catch((err) => {
+                        logger(`[Session ${id}] Messages Upsert Error: ${err.message}`);
+                    });
+                }
+            });
         });
 
     } catch (e) {
