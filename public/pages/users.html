@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="page" content="users" />
+    <title>Fleet Orchestration · Chathu MD V4.2</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="backdrop" id="backdrop" onclick="toggleSidebar(false)"></div>
+      <div class="layout">
+        <aside class="sidebar" id="sidebar">
+        <div class="sb-brand">
+          <div class="logo"><svg viewBox="0 0 24 24">
+              <path fill="currentColor" d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+            </svg></div>
+          <div class="meta">
+            <div class="name">Chathu MD V4.2</div>
+            <div class="ver">v5.0 · Advanced UI</div>
+          </div>
+        </div>
+
+        <div class="sb-status offline" id="sbStatus">
+          <div class="row"><span class="ind"></span><span class="label">Core Health</span></div>
+          <div class="value" id="sbValue">Offline</div>
+          <div class="text-xs dim mt-1" id="sbSub">No active link</div>
+        </div>
+
+        <nav class="sb-nav">
+          <div class="sb-section">Workspace</div>
+          <div class="nav-item" data-page="dashboard"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%223%22 y=%223%22 width=%227%22 height=%229%22/><rect x=%2214%22 y=%223%22 width=%227%22 height=%225%22/><rect x=%2214%22 y=%2212%22 width=%227%22 height=%229%22/><rect x=%223%22 y=%2216%22 width=%227%22 height=%225%22/></svg>')"></i><span>Dashboard</span>
+          </div>
+          <div class="nav-item" data-page="sessions"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%225%22 y=%222%22 width=%2214%22 height=%2220%22 rx=%222%22/><path d=%22M12 18h.01%22/></svg>')"></i><span>Sessions</span><span
+              class="badge" id="navSessions">0</span></div>
+          <div class="nav-item active" data-page="users"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2%22/><circle cx=%229%22 cy=%227%22 r=%224%22/><path d=%22M22 21v-2a4 4 0 0 0-3-3.87%22/><path d=%22M16 3.13a4 4 0 0 1 0 7.75%22/></svg>')"></i><span>Fleet
+              Orchestration</span></div>
+          <div class="nav-item" data-page="groups"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M17 11l2 2 4-4%22/><circle cx=%229%22 cy=%227%22 r=%224%22/><path d=%22M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2%22/></svg>')"></i><span>Groups</span>
+          </div>
+          <div class="nav-item" data-page="commands"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2216 18 22 12 16 6%22/><polyline points=%228 6 2 12 8 18%22/></svg>')"></i><span>Commands</span>
+          </div>
+          <div class="nav-item" data-page="users_db"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2%22/><circle cx=%2212%22 cy=%227%22 r=%224%22/></svg>')"></i><span>User
+              Management</span></div>
+
+          <div class="sb-section">Engagement</div>
+          <div class="nav-item" data-page="broadcast"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polygon points=%223 11 22 2 13 21 11 13 3 11%22/></svg>')"></i><span>Broadcast</span>
+          </div>
+          <div class="nav-item" data-page="autoreply"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z%22/></svg>')"></i><span>Auto-Reply</span>
+          </div>
+          <div class="nav-item" data-page="scheduler"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/><polyline points=%2212 6 12 12 16 14%22/></svg>')"></i><span>Scheduler</span>
+          </div>
+          <div class="sb-section">System</div>
+          <div class="nav-item" data-page="viewonce_gallery"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z%22/><circle cx=%2212%22 cy=%2212%22 r=%223%22/></svg>')"></i><span>View Once Gallery</span></div>
+          <div class="nav-item" data-page="files"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z%22/><polyline points=%2214 2 14 8 20 8%22/></svg>')"></i><span>Files</span>
+          </div>
+          <div class="nav-item" data-page="settings"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%223%22/><path d=%22M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z%22/></svg>')"></i><span>Settings</span>
+          </div>
+          <div class="nav-item" data-page="logs"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z%22/><line x1=%229%22 y1=%2213%22 x2=%2215%22 y2=%2213%22/><line x1=%229%22 y1=%2217%22 x2=%2215%22 y2=%2217%22/></svg>')"></i><span>Live
+              Logs</span></div>
+        </nav>
+
+        <div class="sb-footer">
+          <div class="avatar" id="footAvatar">A</div>
+          <div class="info">
+            <div class="uname" id="footUser">admin</div>
+            <div class="role">Administrator</div>
+          </div>
+          <button class="logout" onclick="logout()" title="Sign out">
+            <i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4%22/><polyline points=%2216 17 21 12 16 7%22/><line x1=%2221%22 y1=%2212%22 x2=%229%22 y2=%2212%22/></svg>')"></i>
+          </button>
+        </div>
+      </aside>
+        <div class="main">
+          <header class="topbar">
+          <button class="menu-btn" onclick="toggleSidebar(true)">
+            <i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><line x1=%223%22 y1=%2212%22 x2=%2221%22 y2=%2212%22/><line x1=%223%22 y1=%226%22 x2=%2221%22 y2=%226%22/><line x1=%223%22 y1=%2218%22 x2=%2221%22 y2=%2218%22/></svg>')"></i>
+          </button>
+          <div>
+            <h1 id="topTitle">Fleet Orchestration</h1>
+          </div>
+          <div class="spacer"></div>
+          <div class="stat-pill"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/><polyline points=%2212 6 12 12 16 14%22/></svg>')"></i>Uptime
+            <b id="topUptime">--</b>
+          </div>
+          <div class="stat-pill"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%222%22 y=%223%22 width=%2220%22 height=%2214%22 rx=%222%22/><line x1=%228%22 y1=%2221%22 x2=%2216%22 y2=%2221%22/><line x1=%2212%22 y1=%2217%22 x2=%2212%22 y2=%2221%22/></svg>')"></i>RAM
+            <b id="topMem">--</b>
+          </div>
+        </header>
+          <main class="content">
+            <div class="page" id="page-users">
+            <div class="fleet-chip-row" id="fleetFilterChips"></div>
+
+            <div class="fleet-stats" id="fleetStats">
+              <!-- Dynamic Stats -->
+            </div>
+
+            <div class="entity-shell">
+              <div class="card pro-card" style="padding:0; overflow:hidden; border:1px solid rgba(255,255,255,0.08)">
+                <div class="table-wrap">
+                  <table class="pro-table">
+                    <thead>
+                      <tr>
+                        <th style="padding-left:20px">BOT IDENTITY</th>
+                        <th>CONNECTION HEALTH</th>
+                        <th>RUNTIME POLICY</th>
+                        <th>PRIMARY OWNER</th>
+                        <th style="text-align:right; padding-right:20px">OPERATIONS</th>
+                      </tr>
+                    </thead>
+                    <tbody id="usersTable">
+                      <tr>
+                        <td colspan="5" class="empty-row loading">Synchronizing fleet data...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD SESSION MODAL -->
+  <div class="modal-back" id="addSessionModal">
+    <div class="modal">
+      <h3>Add New Device</h3>
+      <p class="muted">Link an additional WhatsApp account to this bot</p>
+      <div class="field"><label>Session ID</label><input class="input" id="newSessId" placeholder="e.g. bot2" /></div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchAddMode('qr')">QR Code</div>
+        <div class="tab" onclick="switchAddMode('pair')">Pair Code</div>
+      </div>
+      <div class="tab-content active" id="addModeQr">
+        <p class="text-xs dim mb-3">Use your phone's "Linked Devices" feature to scan the generated QR code.</p>
+      </div>
+      <div class="tab-content" id="addModePair">
+        <div class="field"><label>Phone Number</label><input class="input" id="newSessPhone" type="tel"
+            placeholder="07XXXXXXXX or 947XXXXXXXX" /></div>
+        <p class="text-xs dim mb-3">Enter `07XXXXXXXX` or `947XXXXXXXX`. For non-local numbers, include the country
+          code. Do not use spaces or symbols. A pairing code will be generated to enter on WhatsApp from Linked Devices
+          using Link with Phone Number.</p>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="closeModal('addSessionModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmAddSession()" id="confirmAddBtn">Create Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR / PAIR MODAL -->
+  <div class="modal-back" id="qrModal">
+    <div class="modal">
+      <h3 id="qrModalTitle">Link Device</h3>
+      <p class="muted" id="qrModalSub">Scan with your WhatsApp app</p>
+      <div class="qr-wrap" id="qrModalImg"><span>Preparing secure QR...</span></div>
+      <div id="qrModalPair" style="display:none">
+        <div class="pair-display" id="qrModalPairCode">-- --</div>
+        <p class="text-xs dim" style="text-align:center;margin-top:-10px;margin-bottom:14px">
+          Open WhatsApp &rarr; Settings &rarr; Linked Devices &rarr; Link with Phone Number<br />Enter this code
+          (expires in 60 seconds). Use `07XXXXXXXX`
+          or `947XXXXXXXX` when requesting the code.</p>
+      </div>
+      <div class="actions"><button class="btn btn-ghost" onclick="closeModal('qrModal')">Close</button><button
+          class="btn btn-secondary" onclick="refreshActiveQr()">Refresh QR</button></div>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+  <div id="topProgress"></div>
+  <div id="confirmOverlay" class="confirm-overlay" role="dialog" aria-modal="true">
+    <div class="confirm-card">
+      <h3 class="confirm-title" id="confirmTitle">Are you sure?</h3>
+      <p class="confirm-msg" id="confirmMsg"></p>
+      <div class="confirm-actions">
+        <button type="button" class="confirm-cancel" id="confirmCancelBtn">Cancel</button>
+        <button type="button" class="confirm-ok" id="confirmOkBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- USER EDIT MODAL -->
+  <div class="modal-back" id="userEditModal">
+    <div class="modal" style="max-width:500px">
+      <div class="modal-header">
+        <h3 id="userEditTitle">Edit User</h3>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('userEditModal')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:20px">
+        <input type="hidden" id="editUserJid" />
+
+        <h4 style="margin:0 0 15px 0; font-size:13px; text-transform:uppercase; letter-spacing:1px; opacity:0.7">
+          Permissions & Role</h4>
+        <div class="stack gap-3">
+          <label class="row"
+            style="padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; justify-content:space-between; cursor:pointer">
+            <span>
+              <b style="color:var(--brand)">Owner Access</b><br />
+              <span class="text-xs dim">Full administrative control</span>
+            </span>
+            <span class="switch"><input type="checkbox" id="editUserIsOwner" /><span class="slider"></span></span>
+          </label>
+          <label class="row"
+            style="padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; justify-content:space-between; cursor:pointer">
+            <span>
+              <b style="color:var(--info)">Premium Tier</b><br />
+              <span class="text-xs dim">Bypass limits & pro features</span>
+            </span>
+            <span class="switch"><input type="checkbox" id="editUserPremium" /><span class="slider"></span></span>
+          </label>
+          <label class="row"
+            style="padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; justify-content:space-between; cursor:pointer">
+            <span>
+              <b style="color:var(--danger)">Restrict User</b><br />
+              <span class="text-xs dim">Ban user from using the bot</span>
+            </span>
+            <span class="switch"><input type="checkbox" id="editUserBanned" /><span class="slider"></span></span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer"
+        style="padding:20px; border-top:1px solid rgba(255,255,255,0.05); justify-content:flex-end; gap:12px">
+        <button class="btn btn-secondary" onclick="closeModal('userEditModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveUserEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOT SETTINGS MODAL -->
+  <div class="modal-back" id="botSettingsModal">
+    <div class="modal bot-settings-modal" style="max-width:1080px;padding:0;overflow:hidden">
+      <div class="modal-header">
+        <div class="bot-settings-header-copy">
+          <div class="bot-settings-title-row">
+            <h3>Bot Settings</h3>
+            <span class="badge blue" id="botAccessBadge">PUBLIC</span>
+            <span class="bot-status-pill" id="botStatusPill"><span class="dot"></span><span id="botStatusPillText">--</span></span>
+            <span id="botSettingsAutoSaveStatus" style="font-size:10px;color:var(--brand);margin-left:auto;opacity:0.8;display:flex;align-items:center;gap:4px">
+              <i class="bot-icon" data-icon="check-circle" style="width:10px;height:10px"></i>
+              <span>All changes saved</span>
+            </span>
+          </div>
+          <p class="muted" id="botSettingsSubtitle">Orchestrating instance</p>
+        </div>
+        <button class="btn btn-ghost btn-sm bot-settings-close" aria-label="Close bot settings" onclick="closeModal('botSettingsModal')">&times;</button>
+      </div>
+      <div class="bot-settings-shell">
+        <div class="bot-settings-sidebar">
+          <div class="bot-nav-item active" id="botNavItem-general" onclick="switchBotTab('general')">
+            <i class="bot-icon" data-icon="robot"></i>
+            <span>General</span>
+          </div>
+          <div class="bot-nav-item" id="botNavItem-health" onclick="switchBotTab('health')">
+            <i class="bot-icon" data-icon="activity"></i>
+            <span>Health</span>
+          </div>
+          <div class="bot-nav-item" id="botNavItem-ai" onclick="switchBotTab('ai')">
+            <i class="bot-icon" data-icon="cpu"></i>
+            <span>AI Engine</span>
+          </div>
+          <div class="bot-nav-item" id="botNavItem-automation" onclick="switchBotTab('automation')">
+            <i class="bot-icon" data-icon="refresh"></i>
+            <span>Automation</span>
+          </div>
+          <div class="bot-nav-item" id="botNavItem-modules" onclick="switchBotTab('modules')">
+            <i class="bot-icon" data-icon="layers"></i>
+            <span>Modules</span>
+          </div>
+          <div class="bot-nav-item" id="botNavItem-privacy" onclick="switchBotTab('privacy')">
+            <i class="bot-icon" data-icon="shield"></i>
+            <span>Privacy / Anti-Delete</span>
+          </div>
+          <div class="bot-nav-item" id="botNavItem-groups" onclick="switchBotTab('groups')">
+            <i class="bot-icon" data-icon="users"></i>
+            <span>Groups</span>
+          </div>
+
+
+          <div class="bot-nav-item" id="botNavItem-actions" onclick="switchBotTab('actions')">
+            <i class="bot-icon" data-icon="zap"></i>
+            <span>Actions</span>
+          </div>
+        </div>
+        <div class="bot-tab-content">
+
+          <!-- ========== GENERAL ========== -->
+          <section class="bot-tab-section" id="botTab-general">
+            <div class="advanced-panel">
+              <div class="advanced-section">
+                <div class="advanced-head">
+                  <div>
+                    <h4>Identity & Style</h4>
+                    <p>Display name, owner, command prefix, and visual theme.</p>
+                  </div>
+                </div>
+                <div class="control-grid">
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="robot"></i>Bot Name</div><div class="desc">Display name override</div></div>
+                    <input class="input" id="botGenName" placeholder="Chathu MD" />
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="fingerprint"></i>Session ID</div><div class="desc">Read-only</div></div>
+                    <input class="input" id="botGenSessionId" readonly />
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="phone"></i>WhatsApp Number</div><div class="desc">Linked device</div></div>
+                    <input class="input" id="botGenWhatsappNumber" readonly />
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="crown"></i>Owner Number</div><div class="desc">Primary owner JID</div></div>
+                    <input class="input" id="botGenOwner" placeholder="947XXXXXXXX" />
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="terminal"></i>Command Prefix</div><div class="desc">e.g. . or !</div></div>
+                    <input class="input" id="botGenPrefix" maxlength="3" />
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="shield"></i>Work Mode</div><div class="desc">Runtime visibility</div></div>
+                    <select class="select" id="botGenWorkMode">
+                      <option value="public">Public</option>
+                      <option value="private">Private</option>
+                      <option value="self">Self</option>
+                      <option value="group">Groups Only</option>
+                    </select>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="layers"></i>Global Theme</div><div class="desc">Message appearance</div></div>
+                    <select class="select" id="botGenTheme">
+                      <option value="auto">Automatic (Role-based)</option>
+                      <option value="sakura">Sakura Blossom 🌸</option>
+                      <option value="premium_theme">Premium Minimalist 🌑</option>
+                      <option value="owner">Master Control 👑</option>
+                      <option value="premium_owner">Nexus Prime 💎</option>
+                    </select>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="power"></i>Bot Enabled</div><div class="desc">Allow this session to respond</div></div>
+                    <span class="switch"><input type="checkbox" id="botGenEnabled" /><span class="slider"></span></span>
+                  </label>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- ========== HEALTH ========== -->
+          <section class="bot-tab-section" id="botTab-health" style="display:none">
+            <div class="advanced-panel">
+              <div class="advanced-section">
+                <div class="advanced-head">
+                  <div>
+                    <h4>Connection &amp; Runtime</h4>
+                    <p>Real-time link status and pairing info.</p>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" onclick="refreshBotHealth()"><i class="bot-icon" data-icon="refresh"></i>Refresh</button>
+                </div>
+                <div class="health-grid health-grid-3">
+                  <div class="health-card"><div class="k"><i class="bot-icon" data-icon="wifi"></i>Connection</div><div class="v" id="botHealthConn">--</div></div>
+                  <div class="health-card"><div class="k"><i class="bot-icon" data-icon="phone"></i>Phone</div><div class="v" id="botHealthPhone">--</div></div>
+                  <div class="health-card"><div class="k"><i class="bot-icon" data-icon="monitor"></i>Platform</div><div class="v" id="botHealthPlatform">--</div></div>
+                  <div class="health-card"><div class="k"><i class="bot-icon" data-icon="clock"></i>Started</div><div class="v" id="botHealthStartedAt">--</div></div>
+                  <div class="health-card"><div class="k"><i class="bot-icon" data-icon="clock"></i>Connected</div><div class="v" id="botHealthConnectedAt">--</div></div>
+                  <div class="health-card"><div class="k"><i class="bot-icon" data-icon="alert"></i>Last Error</div><div class="v small" id="botHealthLastError">None</div></div>
+                  <div class="health-card"><div class="k"><i class="bot-icon" data-icon="qr"></i>QR Status</div><div class="v" id="botHealthQrStatus">--</div></div>
+                  <div class="health-card"><div class="k"><i class="bot-icon" data-icon="key"></i>Pair Code</div><div class="v" id="botHealthPairStatus">--</div></div>
+                  <div class="health-card"><div class="k"><i class="bot-icon" data-icon="message-square"></i>Messages</div><div class="v" id="botHealthProcessed">0</div></div>
+                  <div class="health-card"><div class="k"><i class="bot-icon" data-icon="terminal"></i>Commands</div><div class="v" id="botHealthCommands">0</div></div>
+                  <div class="health-card"><div class="k"><i class="bot-icon" data-icon="cpu"></i>Reconnects</div><div class="v" id="botHealthReconnects">0</div></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ========== AI ENGINE ========== -->
+          <section class="bot-tab-section" id="botTab-ai" style="display:none">
+            <div class="advanced-panel">
+              <div class="callout callout-warning" id="aiWarningCard">
+                <i class="bot-icon" data-icon="alert"></i>
+                <div>
+                  <strong>Warning</strong>
+                  <p>AI auto-reply can create bot-to-bot loops if multiple bots share a group. Use <b>Mention Only</b> mode in groups.</p>
+                </div>
+              </div>
+              <div class="advanced-section pro-section">
+                <div class="advanced-head">
+                  <div><h4>AI Engine</h4><p>Intelligent response settings for this session.</p></div>
+                  <span class="badge blue">PRO</span>
+                </div>
+                <div class="control-grid">
+                  <label class="control-card field-card">
+                    <div><div class="label">AI Auto Reply</div><div class="desc">Auto-respond using AI</div></div>
+                    <span class="switch"><input type="checkbox" id="botAiAutoReply" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label">AI Voice Reply</div><div class="desc">Generate voice messages</div></div>
+                    <span class="switch"><input type="checkbox" id="botAiAutoVoice" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label">AI Persona</div><div class="desc">Personality style</div></div>
+                    <select class="select" id="botAiPersona">
+                      <option value="friendly">Friendly</option>
+                      <option value="funny">Funny</option>
+                      <option value="savage">Savage</option>
+                      <option value="romantic">Romantic</option>
+                      <option value="professional">Professional</option>
+                      <option value="robot">Robot</option>
+                    </select>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label">AI Language</div><div class="desc">Response language</div></div>
+                    <select class="select" id="botAiLang">
+                      <option value="auto">Auto-Detect</option>
+                      <option value="en">English</option>
+                      <option value="si">Sinhala</option>
+                      <option value="ta">Tamil</option>
+                    </select>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label">AI Group Mode</div><div class="desc">Group message handling</div></div>
+                    <select class="select" id="botAiGroupMode">
+                      <option value="silent">Silent</option>
+                      <option value="mention">Mention Only</option>
+                      <option value="everyone">Everyone</option>
+                    </select>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label">AI Max Words</div><div class="desc">Max response length</div></div>
+                    <input type="number" class="input" id="botAiMaxWords" min="10" max="500" />
+                  </label>
+                </div>
+                <div class="advanced-section-inner field-block">
+                  <div class="label-with-icon"><span>Custom System Instruction</span></div>
+                  <div class="desc">Override the global AI system prompt for this bot.</div>
+                  <textarea class="input mt-2" id="botAiSystemInstruction" placeholder="You are a helpful WhatsApp assistant for…" style="min-height:120px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px"></textarea>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- ========== AUTOMATION ========== -->
+          <section class="bot-tab-section" id="botTab-automation" style="display:none">
+            <div class="advanced-panel">
+              <div class="advanced-section">
+                <div class="advanced-head">
+                  <div class="label-with-icon"><i class="bot-icon" data-icon="refresh"></i><h4>Instance Automation</h4></div>
+                  <p class="mt-1">Manage all automated behaviors and presence settings in one place.</p>
+                </div>
+                <div class="control-grid">
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="zap"></i>Always Online</div><div class="desc">Keep status as 'online'</div></div>
+                    <span class="switch"><input type="checkbox" id="botGenAlwaysOnline" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="eye"></i>Auto Status</div><div class="desc">View status updates</div></div>
+                    <span class="switch"><input type="checkbox" id="botGenAutoStatus" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="activity"></i>Auto Bio</div><div class="desc">Update bio with uptime</div></div>
+                    <span class="switch"><input type="checkbox" id="botGenAutoBio" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="type"></i>Auto Typing</div><div class="desc">Show typing indicator</div></div>
+                    <span class="switch"><input type="checkbox" id="botAutoTyping" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="mic"></i>Always Recording</div><div class="desc">Show 'recording...' status</div></div>
+                    <span class="switch"><input type="checkbox" id="botAutoRecording" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="message-circle"></i>Normal Auto Reply</div><div class="desc">Use auto-reply rules</div></div>
+                    <span class="switch"><input type="checkbox" id="botAutoReply" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="check-circle"></i>Auto Read</div><div class="desc">Mark messages as read</div></div>
+                    <span class="switch"><input type="checkbox" id="botAutoRead" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="smile"></i>Auto React Status</div><div class="desc">React to viewed status</div></div>
+                    <span class="switch"><input type="checkbox" id="botAutoReact" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="phone-off"></i>Anti-Call</div><div class="desc">Auto-reject incoming calls</div></div>
+                    <span class="switch"><input type="checkbox" id="botAntiCall" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="user-minus"></i>Anti-Group Join</div><div class="desc">Block group invites</div></div>
+                    <span class="switch"><input type="checkbox" id="botAntiGroupJoin" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="alert-triangle"></i>NSFW Filter</div><div class="desc">Block adult content</div></div>
+                    <span class="switch"><input type="checkbox" id="botNsfwFilter" /><span class="slider"></span></span>
+                  </label>
+                </div>
+
+                <div class="advanced-section-inner field-block mt-3">
+                  <div class="label-with-icon"><i class="bot-icon" data-icon="at-sign"></i><span>Mention Reply Text</span></div>
+                  <div class="desc">Auto-response when bot is @-mentioned in groups.</div>
+                  <textarea class="input mt-2" id="botGenMentionReply" placeholder="Hello! I'm online — use the menu to see commands." style="min-height:72px;resize:vertical"></textarea>
+                </div>
+
+
+              </div>
+            </div>
+          </section>
+
+          <!-- ========== MODULES ========== -->
+          <section class="bot-tab-section" id="botTab-modules" style="display:none">
+            <div class="advanced-panel">
+              <div class="advanced-section">
+                <div class="advanced-head">
+                  <div>
+                    <h4>Module Orchestration</h4>
+                    <p>Enable or disable command modules for this session. Disabled modules are skipped at dispatch time.</p>
+                  </div>
+                  <span class="badge blue">PRO</span>
+                </div>
+                <div id="botModuleGrid" class="control-grid module-grid">
+                  <!-- Modules populated by renderBotModules() -->
+                </div>
+                <div class="bot-form-actions">
+                  <button class="btn btn-secondary btn-sm" onclick="setAllBotModules(true)">Enable All</button>
+                  <button class="btn btn-secondary btn-sm" onclick="setAllBotModules(false)">Disable All</button>
+                  <button class="btn btn-primary" onclick="saveBotSettings('modules')">Save Modules</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ========== PRIVACY / ANTI-DELETE ========== -->
+          <section class="bot-tab-section" id="botTab-privacy" style="display:none">
+            <div class="advanced-panel">
+              <div class="callout callout-warning">
+                <i class="bot-icon" data-icon="shield"></i>
+                <div>
+                  <strong>Privacy notice</strong>
+                  <p>Anti-Delete and Anti-View-Once preserve content others tried to delete. Use responsibly — this may violate group rules or privacy expectations.</p>
+                </div>
+              </div>
+              <div class="advanced-section pro-section">
+                <div class="advanced-head">
+                  <div class="label-with-icon"><i class="bot-icon" data-icon="shield"></i><h4>Anti-Delete & Privacy Engine</h4></div>
+                  <span class="badge blue">PRO</span>
+                </div>
+                <div class="control-grid">
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="trash"></i>Anti-Delete</div><div class="desc">Recover deleted messages</div></div>
+                    <span class="switch"><input type="checkbox" id="botAntiDeleteEnabled" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="eye"></i>Anti View-Once</div><div class="desc">Save view-once media</div></div>
+                    <span class="switch"><input type="checkbox" id="botAntiViewOnce" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="refresh"></i>Auto Cleanup</div><div class="desc">Purge captured files</div></div>
+                    <span class="switch"><input type="checkbox" id="botPrivacyAutoCleanup" /><span class="slider"></span></span>
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="monitor"></i>Storage Limit</div><div class="desc">Max capture size (MB)</div></div>
+                    <input type="number" class="input" id="botPrivacyMaxStorage" min="50" max="5000" placeholder="500" />
+                  </label>
+                  <label class="control-card field-card">
+                    <div><div class="label"><i class="bot-icon" data-icon="user-minus"></i>Ignore Groups</div><div class="desc">Disable in group chats</div></div>
+                    <span class="switch"><input type="checkbox" id="botPrivacyIgnoreGroups" /><span class="slider"></span></span>
+                  </label>
+                </div>
+
+                <div class="advanced-section-inner field-block mt-3">
+                  <div class="label-with-icon"><i class="bot-icon" data-icon="users"></i><span>Recovery Routing</span></div>
+                  <div class="desc">Select where recovered content should be restored.</div>
+                  <input type="hidden" id="botPrivacyAdTarget" value="chat" />
+                  <div class="route-grid mt-2">
+                    <div class="control-card route-card" id="botPrivacyTargetChat" onclick="setAdTarget('chat')">
+                      <div class="route-icon"><i class="bot-icon" data-icon="message-circle"></i></div>
+                      <div><div class="label">Original Chat</div><div class="desc">Restore in place</div></div>
+                    </div>
+                    <div class="control-card route-card" id="botPrivacyTargetOwner" onclick="setAdTarget('owner')">
+                      <div class="route-icon"><i class="bot-icon" data-icon="crown"></i></div>
+                      <div><div class="label">Owner Inbox</div><div class="desc">Private log to owner</div></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="advanced-section-inner field-block mt-3">
+                  <div class="label-with-icon"><i class="bot-icon" data-icon="layers"></i><span>Capture Matrix</span></div>
+                  <div class="desc">Define which content types the engine should track.</div>
+                  <div class="filter-grid mt-2">
+                    <label class="check-pill">
+                      <input type="checkbox" id="botAdFilterText" />
+                      <span>Text</span>
+                    </label>
+                    <label class="check-pill">
+                      <input type="checkbox" id="botAdFilterImage" />
+                      <span>Images</span>
+                    </label>
+                    <label class="check-pill">
+                      <input type="checkbox" id="botAdFilterVideo" />
+                      <span>Videos</span>
+                    </label>
+                    <label class="check-pill">
+                      <input type="checkbox" id="botAdFilterAudio" />
+                      <span>Audio</span>
+                    </label>
+                    <label class="check-pill">
+                      <input type="checkbox" id="botAdFilterSticker" />
+                      <span>Stickers</span>
+                    </label>
+                    <label class="check-pill">
+                      <input type="checkbox" id="botAdFilterDoc" />
+                      <span>Docs</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ========== GROUPS ========== -->
+          <section class="bot-tab-section" id="botTab-groups" style="display:none">
+            <div class="advanced-panel">
+              <div class="advanced-section">
+                <div class="advanced-head">
+                  <div><h4>Groups Handled By This Bot</h4><p>Groups where this session is the routing target.</p></div>
+                  <div class="stack gap-2 row">
+                    <button class="btn btn-secondary btn-sm" onclick="renderBotGroups()"><i class="bot-icon" data-icon="refresh"></i>Refresh</button>
+                  </div>
+                </div>
+                <div id="botGroupsList" class="bot-groups-list">
+                  <div class="empty-state">Loading…</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+
+
+
+
+          <!-- ========== ACTIONS ========== -->
+          <section class="bot-tab-section" id="botTab-actions" style="display:none">
+            <div class="advanced-panel">
+              <div class="advanced-section">
+                <div class="advanced-head">
+                  <div><h4>Lifecycle Actions</h4><p>Manage the link, pairing, and runtime caches.</p></div>
+                </div>
+                <div class="modal-action-grid action-grid">
+                  <button class="btn btn-secondary" onclick="runBotModalAction('reconnect')"><i class="bot-icon" data-icon="refresh"></i>Reconnect Bot</button>
+                  <button class="btn btn-secondary" onclick="runBotModalAction('restart')"><i class="bot-icon" data-icon="refresh"></i>Restart Session</button>
+                  <button class="btn btn-secondary" onclick="runBotModalAction('qr')"><i class="bot-icon" data-icon="qr"></i>Refresh QR</button>
+                  <button class="btn btn-secondary" onclick="runBotModalAction('pair')"><i class="bot-icon" data-icon="key"></i>Request Pair Code</button>
+                  <button class="btn btn-secondary" onclick="runBotModalAction('clearQrPause')"><i class="bot-icon" data-icon="refresh"></i>Clear QR Pause</button>
+                  <button class="btn btn-secondary" onclick="runBotModalAction('clearPairCode')"><i class="bot-icon" data-icon="x-circle"></i>Clear Pair Code</button>
+                  <button class="btn btn-secondary" onclick="runBotModalAction('clearCache')"><i class="bot-icon" data-icon="trash"></i>Clear Runtime Cache</button>
+                  <button class="btn btn-secondary" onclick="runBotModalAction('syncGroups')"><i class="bot-icon" data-icon="users"></i>Sync Groups</button>
+                  <button class="btn btn-secondary" onclick="runBotModalAction('exportInfo')"><i class="bot-icon" data-icon="download"></i>Export Session Info</button>
+                </div>
+              </div>
+              <div class="advanced-section danger-zone">
+                <div class="advanced-head">
+                  <div>
+                    <h4><i class="bot-icon" data-icon="alert"></i>Danger Zone</h4>
+                    <p>Destructive actions. They cannot be undone — confirm twice.</p>
+                  </div>
+                  <span class="badge red">DANGER</span>
+                </div>
+                <div class="modal-action-grid action-grid">
+                  <button class="btn btn-danger" onclick="runBotModalAction('disconnect')"><i class="bot-icon" data-icon="x-circle"></i>Disconnect Bot</button>
+                  <button class="btn btn-danger" id="botActionRemove" onclick="runBotModalAction('remove')"><i class="bot-icon" data-icon="trash"></i>Remove Session</button>
+                  <button class="btn btn-danger" onclick="runBotModalAction('logout')"><i class="bot-icon" data-icon="x-circle"></i>Logout &amp; Delete Credentials</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+    <script src="/js/app.js"></script>
+  </body>
+  </html>
+  

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="page" content="logs" />
+    <title>Live Logs · Chathu MD V4.2</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="backdrop" id="backdrop" onclick="toggleSidebar(false)"></div>
+      <div class="layout">
+        <aside class="sidebar" id="sidebar">
+        <div class="sb-brand">
+          <div class="logo"><svg viewBox="0 0 24 24">
+              <path fill="currentColor" d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+            </svg></div>
+          <div class="meta">
+            <div class="name">Chathu MD V4.2</div>
+            <div class="ver">v5.0 · Advanced UI</div>
+          </div>
+        </div>
+
+        <div class="sb-status offline" id="sbStatus">
+          <div class="row"><span class="ind"></span><span class="label">Core Health</span></div>
+          <div class="value" id="sbValue">Offline</div>
+          <div class="text-xs dim mt-1" id="sbSub">No active link</div>
+        </div>
+
+        <nav class="sb-nav">
+          <div class="sb-section">Workspace</div>
+          <div class="nav-item" data-page="dashboard"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%223%22 y=%223%22 width=%227%22 height=%229%22/><rect x=%2214%22 y=%223%22 width=%227%22 height=%225%22/><rect x=%2214%22 y=%2212%22 width=%227%22 height=%229%22/><rect x=%223%22 y=%2216%22 width=%227%22 height=%225%22/></svg>')"></i><span>Dashboard</span>
+          </div>
+          <div class="nav-item" data-page="sessions"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%225%22 y=%222%22 width=%2214%22 height=%2220%22 rx=%222%22/><path d=%22M12 18h.01%22/></svg>')"></i><span>Sessions</span><span
+              class="badge" id="navSessions">0</span></div>
+          <div class="nav-item" data-page="users"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2%22/><circle cx=%229%22 cy=%227%22 r=%224%22/><path d=%22M22 21v-2a4 4 0 0 0-3-3.87%22/><path d=%22M16 3.13a4 4 0 0 1 0 7.75%22/></svg>')"></i><span>Fleet
+              Orchestration</span></div>
+          <div class="nav-item" data-page="groups"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M17 11l2 2 4-4%22/><circle cx=%229%22 cy=%227%22 r=%224%22/><path d=%22M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2%22/></svg>')"></i><span>Groups</span>
+          </div>
+          <div class="nav-item" data-page="commands"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2216 18 22 12 16 6%22/><polyline points=%228 6 2 12 8 18%22/></svg>')"></i><span>Commands</span>
+          </div>
+          <div class="nav-item" data-page="users_db"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2%22/><circle cx=%2212%22 cy=%227%22 r=%224%22/></svg>')"></i><span>User
+              Management</span></div>
+
+          <div class="sb-section">Engagement</div>
+          <div class="nav-item" data-page="broadcast"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polygon points=%223 11 22 2 13 21 11 13 3 11%22/></svg>')"></i><span>Broadcast</span>
+          </div>
+          <div class="nav-item" data-page="autoreply"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z%22/></svg>')"></i><span>Auto-Reply</span>
+          </div>
+          <div class="nav-item" data-page="scheduler"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/><polyline points=%2212 6 12 12 16 14%22/></svg>')"></i><span>Scheduler</span>
+          </div>
+          <div class="sb-section">System</div>
+          <div class="nav-item" data-page="viewonce_gallery"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z%22/><circle cx=%2212%22 cy=%2212%22 r=%223%22/></svg>')"></i><span>View Once Gallery</span></div>
+          <div class="nav-item" data-page="files"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z%22/><polyline points=%2214 2 14 8 20 8%22/></svg>')"></i><span>Files</span>
+          </div>
+          <div class="nav-item" data-page="settings"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%223%22/><path d=%22M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z%22/></svg>')"></i><span>Settings</span>
+          </div>
+          <div class="nav-item active" data-page="logs"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z%22/><line x1=%229%22 y1=%2213%22 x2=%2215%22 y2=%2213%22/><line x1=%229%22 y1=%2217%22 x2=%2215%22 y2=%2217%22/></svg>')"></i><span>Live
+              Logs</span></div>
+        </nav>
+
+        <div class="sb-footer">
+          <div class="avatar" id="footAvatar">A</div>
+          <div class="info">
+            <div class="uname" id="footUser">admin</div>
+            <div class="role">Administrator</div>
+          </div>
+          <button class="logout" onclick="logout()" title="Sign out">
+            <i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4%22/><polyline points=%2216 17 21 12 16 7%22/><line x1=%2221%22 y1=%2212%22 x2=%229%22 y2=%2212%22/></svg>')"></i>
+          </button>
+        </div>
+      </aside>
+        <div class="main">
+          <header class="topbar">
+          <button class="menu-btn" onclick="toggleSidebar(true)">
+            <i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><line x1=%223%22 y1=%2212%22 x2=%2221%22 y2=%2212%22/><line x1=%223%22 y1=%226%22 x2=%2221%22 y2=%226%22/><line x1=%223%22 y1=%2218%22 x2=%2221%22 y2=%2218%22/></svg>')"></i>
+          </button>
+          <div>
+            <h1 id="topTitle">Live Logs</h1>
+          </div>
+          <div class="spacer"></div>
+          <div class="stat-pill"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/><polyline points=%2212 6 12 12 16 14%22/></svg>')"></i>Uptime
+            <b id="topUptime">--</b>
+          </div>
+          <div class="stat-pill"><i class="ic"
+              style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%222%22 y=%223%22 width=%2220%22 height=%2214%22 rx=%222%22/><line x1=%228%22 y1=%2221%22 x2=%2216%22 y2=%2221%22/><line x1=%2212%22 y1=%2217%22 x2=%2212%22 y2=%2221%22/></svg>')"></i>RAM
+            <b id="topMem">--</b>
+          </div>
+        </header>
+          <main class="content">
+            <div class="page" id="page-logs">
+            <div class="ph">
+              <div>
+                <div class="title">Live Logs</div>
+                <div class="desc">Real-time bot activity stream</div>
+              </div>
+              <div class="actions">
+                <button class="btn btn-secondary btn-sm" onclick="loadLogs()">Refresh</button>
+                <button class="btn btn-danger btn-sm" onclick="clearLogs()">Clear</button>
+              </div>
+            </div>
+            <div class="card" style="padding:0">
+              <div class="log-stream" id="logsStream"
+                style="max-height:none;height:65vh;border:none;border-radius:var(--r-lg)"></div>
+            </div>
+          </div>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD SESSION MODAL -->
+  <div class="modal-back" id="addSessionModal">
+    <div class="modal">
+      <h3>Add New Device</h3>
+      <p class="muted">Link an additional WhatsApp account to this bot</p>
+      <div class="field"><label>Session ID</label><input class="input" id="newSessId" placeholder="e.g. bot2" /></div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchAddMode('qr')">QR Code</div>
+        <div class="tab" onclick="switchAddMode('pair')">Pair Code</div>
+      </div>
+      <div class="tab-content active" id="addModeQr">
+        <p class="text-xs dim mb-3">Use your phone's "Linked Devices" feature to scan the generated QR code.</p>
+      </div>
+      <div class="tab-content" id="addModePair">
+        <div class="field"><label>Phone Number</label><input class="input" id="newSessPhone" type="tel"
+            placeholder="07XXXXXXXX or 947XXXXXXXX" /></div>
+        <p class="text-xs dim mb-3">Enter `07XXXXXXXX` or `947XXXXXXXX`. For non-local numbers, include the country
+          code. Do not use spaces or symbols. A pairing code will be generated to enter on WhatsApp from Linked Devices
+          using Link with Phone Number.</p>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="closeModal('addSessionModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmAddSession()" id="confirmAddBtn">Create Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR / PAIR MODAL -->
+  <div class="modal-back" id="qrModal">
+    <div class="modal">
+      <h3 id="qrModalTitle">Link Device</h3>
+      <p class="muted" id="qrModalSub">Scan with your WhatsApp app</p>
+      <div class="qr-wrap" id="qrModalImg"><span>Preparing secure QR...</span></div>
+      <div id="qrModalPair" style="display:none">
+        <div class="pair-display" id="qrModalPairCode">-- --</div>
+        <p class="text-xs dim" style="text-align:center;margin-top:-10px;margin-bottom:14px">
+          Open WhatsApp &rarr; Settings &rarr; Linked Devices &rarr; Link with Phone Number<br />Enter this code
+          (expires in 60 seconds). Use `07XXXXXXXX`
+          or `947XXXXXXXX` when requesting the code.</p>
+      </div>
+      <div class="actions"><button class="btn btn-ghost" onclick="closeModal('qrModal')">Close</button><button
+          class="btn btn-secondary" onclick="refreshActiveQr()">Refresh QR</button></div>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+  <div id="topProgress"></div>
+  <div id="confirmOverlay" class="confirm-overlay" role="dialog" aria-modal="true">
+    <div class="confirm-card">
+      <h3 class="confirm-title" id="confirmTitle">Are you sure?</h3>
+      <p class="confirm-msg" id="confirmMsg"></p>
+      <div class="confirm-actions">
+        <button type="button" class="confirm-cancel" id="confirmCancelBtn">Cancel</button>
+        <button type="button" class="confirm-ok" id="confirmOkBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- USER EDIT MODAL -->
+  <div class="modal-back" id="userEditModal">
+    <div class="modal" style="max-width:500px">
+      <div class="modal-header">
+        <h3 id="userEditTitle">Edit User</h3>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('userEditModal')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:20px">
+        <input type="hidden" id="editUserJid" />
+
+        <h4 style="margin:0 0 15px 0; font-size:13px; text-transform:uppercase; letter-spacing:1px; opacity:0.7">
+          Permissions & Role</h4>
+        <div class="stack gap-3">
+          <label class="row"
+            style="padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; justify-content:space-between; cursor:pointer">
+            <span>
+              <b style="color:var(--brand)">Owner Access</b><br />
+              <span class="text-xs dim">Full administrative control</span>
+            </span>
+            <span class="switch"><input type="checkbox" id="editUserIsOwner" /><span class="slider"></span></span>
+          </label>
+          <label class="row"
+            style="padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; justify-content:space-between; cursor:pointer">
+            <span>
+              <b style="color:var(--info)">Premium Tier</b><br />
+              <span class="text-xs dim">Bypass limits & pro features</span>
+            </span>
+            <span class="switch"><input type="checkbox" id="editUserPremium" /><span class="slider"></span></span>
+          </label>
+          <label class="row"
+            style="padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; justify-content:space-between; cursor:pointer">
+            <span>
+              <b style="color:var(--danger)">Restrict User</b><br />
+              <span class="text-xs dim">Ban user from using the bot</span>
+            </span>
+            <span class="switch"><input type="checkbox" id="editUserBanned" /><span class="slider"></span></span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer"
+        style="padding:20px; border-top:1px solid rgba(255,255,255,0.05); justify-content:flex-end; gap:12px">
+        <button class="btn btn-secondary" onclick="closeModal('userEditModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveUserEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+    <script src="/js/app.js"></script>
+  </body>
+  </html>
+  

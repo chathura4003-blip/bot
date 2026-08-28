@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="page" content="viewonce_gallery" />
+  <title>View Once Gallery · Chathu MD V4.2</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css" />
+  <style>
+    .vo-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+    .vo-search{flex:1;min-width:200px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,0.04);color:var(--txt);font-size:.9rem;outline:none;transition:.2s}
+    .vo-search:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(0,255,136,.12)}
+    .vo-filter{padding:8px 16px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,0.04);color:var(--txt);font-size:.85rem;cursor:pointer}
+    .vo-filter.active{background:var(--brand-soft);color:var(--brand);border-color:rgba(0,255,136,.3)}
+    .vo-stats{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+    .vo-stat{padding:14px 20px;border-radius:14px;background:rgba(255,255,255,0.02);border:1px solid var(--line);flex:1;min-width:140px}
+    .vo-stat .label{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--txt-2);margin-bottom:4px}
+    .vo-stat .val{font-size:1.4rem;font-weight:700}
+    .vo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+    .vo-card{border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,0.02);overflow:hidden;transition:.2s}
+    .vo-card:hover{border-color:rgba(255,255,255,.12);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+    .vo-preview{position:relative;width:100%;aspect-ratio:4/3;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}
+    .vo-preview img{width:100%;height:100%;object-fit:cover}
+    .vo-preview video{width:100%;height:100%;object-fit:cover}
+    .vo-preview .play-badge{position:absolute;width:48px;height:48px;border-radius:50%;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;pointer-events:none}
+    .vo-preview .play-badge svg{width:20px;height:20px;fill:#fff}
+    .vo-preview .type-badge{position:absolute;top:8px;left:8px;padding:4px 10px;border-radius:8px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+    .vo-preview .type-badge.image{background:rgba(59,130,246,.8)}
+    .vo-preview .type-badge.video{background:rgba(239,68,68,.8)}
+    .vo-preview .type-badge.audio{background:rgba(168,85,247,.8)}
+    .vo-preview .type-badge.document{background:rgba(245,158,11,.8)}
+    .vo-info{padding:14px 16px}
+    .vo-info .sender{font-weight:600;font-size:.95rem;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .vo-info .meta{display:flex;gap:10px;flex-wrap:wrap;font-size:.78rem;color:var(--txt-2);margin-bottom:10px}
+    .vo-info .meta span{display:flex;align-items:center;gap:4px}
+    .vo-actions{display:flex;gap:8px}
+    .vo-actions button{flex:1;padding:8px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,0.03);color:var(--txt);font-size:.8rem;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+    .vo-actions button:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,.15)}
+    .vo-actions button.danger:hover{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3);color:#f87171}
+    .vo-empty{text-align:center;padding:60px 20px;color:var(--txt-2)}
+    .vo-empty svg{width:64px;height:64px;opacity:.3;margin-bottom:16px}
+    .vo-empty h3{margin:0 0 8px;font-size:1.1rem;color:var(--txt)}
+    .vo-empty p{font-size:.9rem}
+
+    .lightbox{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.9);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;flex-direction:column}
+    .lightbox.open{display:flex}
+    .lightbox-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,.1);color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10}
+    .lightbox-close:hover{background:rgba(255,255,255,.2)}
+    .lightbox-content{max-width:90vw;max-height:80vh;border-radius:12px;overflow:hidden}
+    .lightbox-content img{max-width:90vw;max-height:80vh;object-fit:contain}
+    .lightbox-content video{max-width:90vw;max-height:80vh}
+    .lightbox-info{margin-top:12px;color:rgba(255,255,255,.7);font-size:.85rem;text-align:center}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="backdrop" id="backdrop" onclick="toggleSidebar(false)"></div>
+    <div class="layout">
+      <aside class="sidebar" id="sidebar">
+        <div class="sb-brand">
+          <div class="logo"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" /></svg></div>
+          <div class="meta">
+            <div class="name">Chathu MD V4.2</div>
+            <div class="ver">v5.0 · Advanced UI</div>
+          </div>
+        </div>
+
+        <div class="sb-status offline" id="sbStatus">
+          <div class="row"><span class="ind"></span><span class="label">Core Health</span></div>
+          <div class="value" id="sbValue">Offline</div>
+          <div class="text-xs dim mt-1" id="sbSub">No active link</div>
+        </div>
+
+        <nav class="sb-nav">
+          <div class="sb-section">Workspace</div>
+          <div class="nav-item" data-page="dashboard"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%223%22 y=%223%22 width=%227%22 height=%229%22/><rect x=%2214%22 y=%223%22 width=%227%22 height=%225%22/><rect x=%2214%22 y=%2212%22 width=%227%22 height=%229%22/><rect x=%223%22 y=%2216%22 width=%227%22 height=%225%22/></svg>')"></i><span>Dashboard</span></div>
+          <div class="nav-item" data-page="sessions"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%225%22 y=%222%22 width=%2214%22 height=%2220%22 rx=%222%22/><path d=%22M12 18h.01%22/></svg>')"></i><span>Sessions</span><span class="badge" id="navSessions">0</span></div>
+          <div class="nav-item" data-page="users"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2%22/><circle cx=%229%22 cy=%227%22 r=%224%22/><path d=%22M22 21v-2a4 4 0 0 0-3-3.87%22/><path d=%22M16 3.13a4 4 0 0 1 0 7.75%22/></svg>')"></i><span>Fleet Orchestration</span></div>
+          <div class="nav-item" data-page="groups"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M17 11l2 2 4-4%22/><circle cx=%229%22 cy=%227%22 r=%224%22/><path d=%22M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2%22/></svg>')"></i><span>Groups</span></div>
+          <div class="nav-item" data-page="commands"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2216 18 22 12 16 6%22/><polyline points=%228 6 2 12 8 18%22/></svg>')"></i><span>Commands</span></div>
+          <div class="nav-item" data-page="users_db"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2%22/><circle cx=%2212%22 cy=%227%22 r=%224%22/></svg>')"></i><span>User Management</span></div>
+
+          <div class="sb-section">Engagement</div>
+          <div class="nav-item" data-page="broadcast"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polygon points=%223 11 22 2 13 21 11 13 3 11%22/></svg>')"></i><span>Broadcast</span></div>
+          <div class="nav-item" data-page="autoreply"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z%22/></svg>')"></i><span>Auto-Reply</span></div>
+          <div class="nav-item" data-page="scheduler"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/><polyline points=%2212 6 12 12 16 14%22/></svg>')"></i><span>Scheduler</span></div>
+
+          <div class="sb-section">System</div>
+          <div class="nav-item active" data-page="viewonce_gallery"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z%22/><circle cx=%2212%22 cy=%2212%22 r=%223%22/></svg>')"></i><span>View Once Gallery</span></div>
+          <div class="nav-item" data-page="files"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z%22/><polyline points=%2214 2 14 8 20 8%22/></svg>')"></i><span>Files</span></div>
+          <div class="nav-item" data-page="settings"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%223%22/><path d=%22M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z%22/></svg>')"></i><span>Settings</span></div>
+          <div class="nav-item" data-page="logs"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z%22/><line x1=%229%22 y1=%2213%22 x2=%2215%22 y2=%2213%22/><line x1=%229%22 y1=%2217%22 x2=%2215%22 y2=%2217%22/></svg>')"></i><span>Live Logs</span></div>
+        </nav>
+
+        <div class="sb-footer">
+          <div class="avatar" id="footAvatar">A</div>
+          <div class="info">
+            <div class="uname" id="footUser">admin</div>
+            <div class="role">Administrator</div>
+          </div>
+          <button class="logout" onclick="logout()" title="Sign out">
+            <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4%22/><polyline points=%2216 17 21 12 16 7%22/><line x1=%2221%22 y1=%2212%22 x2=%229%22 y2=%2212%22/></svg>')"></i>
+          </button>
+        </div>
+      </aside>
+
+      <div class="main">
+        <header class="topbar">
+          <button class="menu-btn" onclick="toggleSidebar(true)">
+            <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><line x1=%223%22 y1=%2212%22 x2=%2221%22 y2=%2212%22/><line x1=%223%22 y1=%226%22 x2=%2221%22 y2=%226%22/><line x1=%223%22 y1=%2218%22 x2=%2221%22 y2=%2218%22/></svg>')"></i>
+          </button>
+          <div>
+            <h1 id="topTitle">View Once Gallery</h1>
+          </div>
+          <div class="spacer"></div>
+          <div class="stat-pill"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/><polyline points=%2212 6 12 12 16 14%22/></svg>')"></i>Uptime <b id="topUptime">--</b></div>
+          <div class="stat-pill"><i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%222%22 y=%223%22 width=%2220%22 height=%2214%22 rx=%222%22/><line x1=%228%22 y1=%2221%22 x2=%2216%22 y2=%2221%22/><line x1=%2212%22 y1=%2217%22 x2=%2212%22 y2=%2221%22/></svg>')"></i>RAM <b id="topMem">--</b></div>
+        </header>
+
+        <main class="content">
+          <div class="page" id="page-viewonce_gallery">
+            <div class="ph">
+              <div>
+                <div class="title">View Once Gallery</div>
+                <div class="desc" id="voDesc">Captured view-once photos and videos</div>
+              </div>
+              <div class="actions"><button class="btn btn-secondary btn-sm" onclick="loadViewOnce()">Refresh</button></div>
+            </div>
+
+            <div class="vo-stats">
+              <div class="vo-stat">
+                <div class="label">Total Captures</div>
+                <div class="val" id="voTotal">0</div>
+              </div>
+              <div class="vo-stat">
+                <div class="label">Photos</div>
+                <div class="val" id="voPhotos">0</div>
+              </div>
+              <div class="vo-stat">
+                <div class="label">Videos</div>
+                <div class="val" id="voVideos">0</div>
+              </div>
+              <div class="vo-stat">
+                <div class="label">Total Size</div>
+                <div class="val" id="voSize">0 MB</div>
+              </div>
+            </div>
+
+            <div class="vo-toolbar">
+              <input type="text" class="vo-search" id="voSearch" placeholder="Search by sender, session, or type..." oninput="filterViewOnce()" />
+              <button class="vo-filter active" data-filter="all" onclick="setFilter('all')">All</button>
+              <button class="vo-filter" data-filter="image" onclick="setFilter('image')">Photos</button>
+              <button class="vo-filter" data-filter="video" onclick="setFilter('video')">Videos</button>
+              <button class="vo-filter" data-filter="audio" onclick="setFilter('audio')">Audio</button>
+            </div>
+
+            <div class="vo-grid" id="voGrid"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    <div class="lightbox-content" id="lightboxContent"></div>
+    <div class="lightbox-info" id="lightboxInfo"></div>
+  </div>
+
+  <!-- ADD SESSION MODAL -->
+  <div class="modal-back" id="addSessionModal">
+    <div class="modal">
+      <h3>Add New Device</h3>
+      <p class="muted">Link an additional WhatsApp account to this bot</p>
+      <div class="field"><label>Session ID</label><input class="input" id="newSessId" placeholder="e.g. bot2" /></div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchAddMode('qr')">QR Code</div>
+        <div class="tab" onclick="switchAddMode('pair')">Pair Code</div>
+      </div>
+      <div class="tab-content active" id="addModeQr">
+        <p class="text-xs dim mb-3">Use your phone's "Linked Devices" feature to scan the generated QR code.</p>
+      </div>
+      <div class="tab-content" id="addModePair">
+        <div class="field"><label>Phone Number</label><input class="input" id="newSessPhone" type="tel" placeholder="07XXXXXXXX or 947XXXXXXXX" /></div>
+        <p class="text-xs dim mb-3">Enter 07XXXXXXXX or 947XXXXXXXX.</p>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="closeModal('addSessionModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmAddSession()" id="confirmAddBtn">Create Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR / PAIR MODAL -->
+  <div class="modal-back" id="qrModal">
+    <div class="modal">
+      <h3 id="qrModalTitle">Link Device</h3>
+      <p class="muted" id="qrModalSub">Scan with your WhatsApp app</p>
+      <div class="qr-wrap" id="qrModalImg"><span>Preparing secure QR...</span></div>
+      <div id="qrModalPair" style="display:none">
+        <div class="pair-display" id="qrModalPairCode">-- --</div>
+      </div>
+      <div class="actions"><button class="btn btn-ghost" onclick="closeModal('qrModal')">Close</button><button class="btn btn-secondary" onclick="refreshActiveQr()">Refresh QR</button></div>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+  <div id="topProgress"></div>
+  <div id="confirmOverlay" class="confirm-overlay" role="dialog" aria-modal="true">
+    <div class="confirm-card">
+      <h3 class="confirm-title" id="confirmTitle">Are you sure?</h3>
+      <p class="confirm-msg" id="confirmMsg"></p>
+      <div class="confirm-actions">
+        <button type="button" class="confirm-cancel" id="confirmCancelBtn">Cancel</button>
+        <button type="button" class="confirm-ok" id="confirmOkBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    let voData = [];
+    let voFilter = 'all';
+
+    function loadViewOnce() {
+      api('/bot-api/viewonce').then(data => {
+        if (!Array.isArray(data)) return;
+        voData = data;
+        updateStats();
+        renderGrid();
+      }).catch(() => {
+        document.getElementById('voGrid').innerHTML = '<div class="vo-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg><h3>Failed to load</h3><p>Could not fetch view-once media. Try refreshing.</p></div>';
+      });
+    }
+
+    function updateStats() {
+      const photos = voData.filter(v => v.mediaType === 'image').length;
+      const videos = voData.filter(v => v.mediaType === 'video').length;
+      const totalMB = voData.reduce((s, v) => s + parseFloat(v.sizeMB || 0), 0);
+      document.getElementById('voTotal').textContent = voData.length;
+      document.getElementById('voPhotos').textContent = photos;
+      document.getElementById('voVideos').textContent = videos;
+      document.getElementById('voSize').textContent = totalMB.toFixed(1) + ' MB';
+    }
+
+    function setFilter(f) {
+      voFilter = f;
+      document.querySelectorAll('.vo-filter').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
+      renderGrid();
+    }
+
+    function filterViewOnce() { renderGrid(); }
+
+    function getFiltered() {
+      const q = (document.getElementById('voSearch').value || '').toLowerCase();
+      return voData.filter(v => {
+        if (voFilter !== 'all' && v.mediaType !== voFilter) return false;
+        if (q) {
+          const text = [v.sender, v.sessionId, v.mediaType, v.chatJid || ''].join(' ').toLowerCase();
+          if (!text.includes(q)) return false;
+        }
+        return true;
+      });
+    }
+
+    function formatTime(ts) {
+      const d = new Date(ts);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' +
+             d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatSize(mb) {
+      const val = parseFloat(mb);
+      if (val < 1) return (val * 1024).toFixed(0) + ' KB';
+      return val.toFixed(1) + ' MB';
+    }
+
+    function renderGrid() {
+      const items = getFiltered();
+      const grid = document.getElementById('voGrid');
+
+      if (items.length === 0) {
+        grid.innerHTML = '<div class="vo-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><h3>No view-once media found</h3><p>Captured view-once photos and videos will appear here.</p></div>';
+        return;
+      }
+
+      grid.innerHTML = items.map(v => {
+        const isImage = v.mediaType === 'image';
+        const isVideo = v.mediaType === 'video';
+        const isAudio = v.mediaType === 'audio';
+        const previewUrl = '/bot-api/viewonce/' + encodeURIComponent(v.filename);
+        const token = State.token;
+        const authUrl = previewUrl + '?token=' + encodeURIComponent(token);
+
+        let previewHtml = '';
+        if (isImage) {
+          previewHtml = '<img src="' + authUrl + '" alt="View Once" loading="lazy" />';
+        } else if (isVideo) {
+          previewHtml = '<video src="' + authUrl + '" preload="metadata" muted></video>' +
+            '<div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>';
+        } else if (isAudio) {
+          previewHtml = '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5" style="width:48px;height:48px"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
+        } else {
+          previewHtml = '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5" style="width:48px;height:48px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+        }
+
+        return '<div class="vo-card">' +
+          '<div class="vo-preview" onclick="openLightbox(\'' + v.filename.replace(/'/g, "\\'") + '\')">' +
+          '<span class="type-badge ' + v.mediaType + '">' + v.mediaType + '</span>' +
+          previewHtml +
+          '</div>' +
+          '<div class="vo-info">' +
+          '<div class="sender">' + escapeHtml(v.sender || 'Unknown') + '</div>' +
+          '<div class="meta">' +
+          '<span>' + formatTime(v.timestamp) + '</span>' +
+          '<span>' + formatSize(v.sizeMB) + '</span>' +
+          '<span>Session: ' + escapeHtml(v.sessionId || '__main__') + '</span>' +
+          '</div>' +
+          '<div class="vo-actions">' +
+          '<button onclick="event.stopPropagation();downloadVO(\'' + v.filename.replace(/'/g, "\\'") + '\')">Download</button>' +
+          '<button class="danger" onclick="event.stopPropagation();deleteVO(\'' + v.filename.replace(/'/g, "\\'") + '\')">Delete</button>' +
+          '</div></div></div>';
+      }).join('');
+    }
+
+    function openLightbox(filename) {
+      const item = voData.find(v => v.filename === filename);
+      if (!item) return;
+      const lb = document.getElementById('lightbox');
+      const content = document.getElementById('lightboxContent');
+      const info = document.getElementById('lightboxInfo');
+      const token = State.token;
+      const url = '/bot-api/viewonce/' + encodeURIComponent(filename) + '?token=' + encodeURIComponent(token);
+
+      if (item.mediaType === 'image') {
+        content.innerHTML = '<img src="' + url + '" alt="View Once" />';
+      } else if (item.mediaType === 'video') {
+        content.innerHTML = '<video src="' + url + '" controls autoplay style="max-width:90vw;max-height:80vh"></video>';
+      } else if (item.mediaType === 'audio') {
+        content.innerHTML = '<audio src="' + url + '" controls autoplay style="width:400px"></audio>';
+      } else {
+        content.innerHTML = '<p style="color:#fff;padding:40px">Preview not available. Use download.</p>';
+      }
+
+      info.textContent = item.sender + ' \u2022 ' + formatTime(item.timestamp) + ' \u2022 Session: ' + (item.sessionId || '__main__');
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox(e) {
+      if (e && e.target !== document.getElementById('lightbox') && !e.target.classList.contains('lightbox-close')) return;
+      const lb = document.getElementById('lightbox');
+      lb.classList.remove('open');
+      document.getElementById('lightboxContent').innerHTML = '';
+      document.body.style.overflow = '';
+    }
+
+    function downloadVO(filename) {
+      const token = State.token;
+      const a = document.createElement('a');
+      a.href = '/bot-api/viewonce/' + encodeURIComponent(filename) + '/download?token=' + encodeURIComponent(token);
+      a.download = filename;
+      a.click();
+    }
+
+    function deleteVO(filename) {
+      confirmDialog('This will permanently remove the captured view-once media.', { title: 'Delete this media?', okText: 'Delete', danger: true }).then(ok => {
+        if (!ok) return;
+        api('/bot-api/viewonce/' + encodeURIComponent(filename), { method: 'DELETE' }).then(() => {
+          toast('Deleted successfully', 'success');
+          loadViewOnce();
+        }).catch(() => toast('Failed to delete', 'error'));
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => { loadViewOnce(); });
+  </script>
+</body>
+</html>

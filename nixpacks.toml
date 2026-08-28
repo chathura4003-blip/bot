@@ -1,0 +1,12 @@
+# Nixpacks build config for Railway / Render / etc.
+# Adds ffmpeg + python3 (yt-dlp self-update target) to the runtime image so
+# media commands work out of the box without manual buildpack tweaks.
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "ffmpeg-full", "python3", "yt-dlp", "google-chrome"]
+
+[phases.install]
+cmds = ["npm install --omit=dev --legacy-peer-deps --no-audit --no-fund"]
+
+[start]
+cmd = "node --expose-gc --max-old-space-size=512 --max-semi-space-size=64 index.js"

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chathu MD V4.2 | Admin Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050505;
+      --bg-2: #0a0a0a;
+      --bg-3: #121212;
+      --panel: rgba(10, 10, 10, .85);
+      --panel-2: rgba(20, 20, 20, .75);
+      --panel-3: rgba(30, 30, 30, .65);
+      --line: rgba(255, 255, 255, .04);
+      --line-2: rgba(255, 255, 255, .08);
+      --line-3: rgba(255, 255, 255, .12);
+      --txt: #ffffff;
+      --txt-2: #a3a3a3;
+      --txt-3: #737373;
+      --brand: #00ff88;
+      --brand-2: #00cc6e;
+      --brand-soft: rgba(0, 255, 136, .1);
+      --accent: #7c3aed;
+      --accent-2: #8b5cf6;
+      --primary-glow: #7c3aed;
+      --info: #06b6d4;
+      --warn: #fbbf24;
+      --danger: #ff4d4d;
+      --grad-brand: linear-gradient(135deg, #00ff88 0%, #00cc6e 100%);
+      --grad-accent: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+      --grad-card: linear-gradient(180deg, rgba(255, 255, 255, .06) 0%, rgba(255, 255, 255, .01) 100%);
+      --r: 16px;
+      --r-lg: 24px;
+      --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, .8);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background:
+        radial-gradient(ellipse 82% 58% at 50% -14%, rgba(34, 197, 94, .14) 0%, transparent 58%),
+        radial-gradient(ellipse 45% 30% at 96% 2%, rgba(124, 58, 237, .16) 0%, transparent 60%),
+        radial-gradient(ellipse 42% 34% at 0% 100%, rgba(14, 165, 233, .12) 0%, transparent 58%),
+        var(--bg);
+      color: var(--txt);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(0, 255, 136, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(124, 77, 255, 0.05) 0%, transparent 40%);
+      z-index: -1;
+      animation: bgPulse 10s infinite alternate;
+    }
+    @keyframes bgPulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.1); }
+    }
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, .02) 0 1px, transparent 1px 120px),
+        repeating-linear-gradient(180deg, rgba(255, 255, 255, .015) 0 1px, transparent 1px 120px);
+      opacity: .22;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Layout Utilities */
+    .row { display: flex; align-items: center; gap: 10px; }
+    .stack { display: flex; flex-direction: column; gap: 10px; }
+    .grid { display: grid; gap: 20px; }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+    
+    .mb-3 { margin-bottom: 12px; }
+    .mb-4 { margin-bottom: 24px; }
+    .mt-3 { margin-top: 12px; }
+    .mt-4 { margin-top: 24px; }
+    
+    .text-xs { font-size: 0.75rem; }
+    .dim { color: var(--txt-3); }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--panel);
+      border-right: 1px solid var(--line-3);
+      backdrop-filter: blur(40px);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+    }
+    .sidebar-h { padding: 34px 24px; display: flex; align-items: center; gap: 14px; }
+    .sidebar-h .logo { width: 44px; height: 44px; background: var(--grad-brand); border-radius: 12px; box-shadow: 0 0 20px rgba(0, 255, 136, 0.3); display: flex; align-items: center; justify-content: center; }
+    .sidebar-h .title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.3rem; letter-spacing: -0.5px; background: linear-gradient(to right, #fff, #a3a3a3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 10px 14px; }
+    .nav-group { margin-bottom: 24px; }
+    .nav-label { font-size: 0.65rem; text-transform: uppercase; font-weight: 800; color: var(--txt-3); padding: 0 16px 10px; letter-spacing: 1.5px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--txt-2); font-size: 0.92rem; font-weight: 500; transition: 0.2s; cursor: pointer; margin-bottom: 4px; border: 1px solid transparent; }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.04); color: var(--txt); border-color: var(--line); }
+    .nav-item.active { background: var(--brand-soft); color: var(--brand); border-color: rgba(0, 255, 136, 0.2); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+    .nav-item .ic { width: 20px; height: 20px; background: currentColor; }
+
+    /* Main Content */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .top-bar { height: 72px; border-bottom: 1px solid var(--line-3); background: var(--panel-2); backdrop-filter: blur(30px); display: flex; align-items: center; justify-content: space-between; padding: 0 34px; z-index: 90; }
+    .content { flex: 1; overflow-y: auto; padding: 34px; position: relative; }
+
+    /* Components */
+    .card { background: var(--grad-card); border: 1px solid var(--line-2); border-radius: var(--r-lg); padding: 28px; margin-bottom: 28px; box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.05); position: relative; }
+    .card-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .card-h .title { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--txt); }
+    
+    /* Top Progress Bar */
+    #topProgress { position: fixed; top: 0; left: 0; height: 2px; width: 0%; background: linear-gradient(90deg, #00ff88, #7c3aed, #06b6d4); box-shadow: 0 0 10px rgba(0, 255, 136, 0.5); z-index: 9999; transition: width 0.3s ease, opacity 0.3s; opacity: 0; }
+    #topProgress.active { opacity: 1; }
+
+    /* Sidebar Health & Footer */
+    .sb-status { margin: 10px 14px 20px; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--line-2); border-radius: 14px; }
+    .sb-status .ind { width: 8px; height: 8px; border-radius: 50%; background: var(--txt-3); }
+    .sb-status.online .ind { background: var(--brand); box-shadow: 0 0 10px var(--brand); }
+    .sb-status .lbl { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--txt-3); }
+    .sb-status .val { font-size: 0.9rem; font-weight: 700; margin-top: 4px; }
+
+    .sb-footer { padding: 20px; border-top: 1px solid var(--line-3); display: flex; align-items: center; gap: 12px; margin-top: auto; }
+    .sb-footer .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--grad-accent); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; }
+    .sb-footer .info { flex: 1; }
+    .sb-footer .uname { font-size: 0.85rem; font-weight: 700; }
+    .sb-footer .role { font-size: 0.65rem; color: var(--txt-3); text-transform: uppercase; font-weight: 700; }
+
+    /* Topbar Telemetry */
+    .stat-pill { background: rgba(255,255,255,0.04); border: 1px solid var(--line-2); padding: 6px 14px; border-radius: 10px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; }
+    .stat-pill b { color: var(--txt); font-weight: 700; }
+    
+    .ph { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 34px; gap: 20px; }
+    .ph .title { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
+    .ph .desc { color: var(--txt-2); font-size: 0.95rem; margin-top: 6px; }
+    .ph .actions { display: flex; gap: 12px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 24px; border-radius: 14px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
+    .btn-primary { background: var(--grad-brand); color: #000; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 255, 136, 0.2); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.04); color: var(--txt); border-color: var(--line-3); }
+    .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: rgba(239, 68, 68, 0.2); }
+    .btn-warn { background: rgba(245, 158, 11, 0.12); color: #fcd34d; border-color: rgba(245, 158, 11, 0.30); }
+    .btn-warn:hover { background: rgba(245, 158, 11, 0.22); transform: translateY(-1px); }
+    .btn-ghost { background: transparent; color: var(--txt-2); border: none; }
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; }
+
+    .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 6px; }
+    .badge.gray { background: rgba(255,255,255,0.05); color: var(--txt-3); }
+    .badge.green { background: rgba(0,255,136,0.1); color: var(--brand); }
+    .badge.blue { background: rgba(6,182,212,0.1); color: var(--info); }
+    .badge.violet { background: rgba(124,58,237,0.1); color: var(--accent); }
+
+    /* Modals */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal { background: var(--bg-2); border: 1px solid var(--line-3); border-radius: var(--r-lg); width: 100%; position: relative; animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes modalPop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .modal-h { padding: 24px; border-bottom: 1px solid var(--line); }
+    .modal-h .title { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: 700; }
+    .modal-b { padding: 24px; }
+    
+    /* Toast */
+    #toastContainer { position: fixed; bottom: 30px; right: 30px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+    .toast { background: var(--bg-3); border: 1px solid var(--line-3); padding: 16px 24px; border-radius: 12px; min-width: 280px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: toastIn 0.3s ease-out; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* Form Elements */
+    .field { margin-bottom: 20px; }
+    .field label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--txt-2); margin-bottom: 8px; }
+    .input, .select, .textarea { width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; color: var(--txt); font-family: inherit; font-size: 0.95rem; outline: none; transition: 0.2s; }
+    .input:focus { border-color: var(--brand); }
+    
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background: var(--line-2); transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background: var(--brand); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Bot Settings Modal */
+    .bot-settings-shell { display: flex; gap: 30px; min-height: 400px; padding: 24px; }
+    .bot-settings-sidebar { width: 180px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid var(--line); padding-right: 20px; }
+    .bot-nav-item { padding: 12px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; color: var(--txt-2); cursor: pointer; transition: 0.2s; }
+    .bot-nav-item:hover { background: rgba(255, 255, 255, 0.03); color: var(--txt); }
+    .bot-nav-item.active { background: var(--brand-soft); color: var(--brand); }
+    .bot-tab-content { flex: 1; }
+    .control-card { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--line); padding: 16px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+    .modal-lg { max-width: 900px; }
+    .modal-sm { max-width: 400px; }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="sidebar">
+    <div class="sidebar-h">
+      <div class="logo"></div>
+      <div class="title">CHATHU MD V4.2</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="sb-status offline" id="sbHealth">
+        <div class="row"><span class="ind"></span><span class="lbl">Core Health</span></div>
+        <div class="val" id="sbHealthText">Offline</div>
+      </div>
+      
+      <div class="nav-group">
+        <div class="nav-label">Main Console</div>
+        <div class="nav-item" data-page="dashboard">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%223%22 y=%223%22 width=%227%22 height=%227%22/><rect x=%2214%22 y=%223%22 width=%227%22 height=%227%22/><rect x=%2214%22 y=%2214%22 width=%227%22 height=%227%22/><rect x=%223%22 y=%2214%22 width=%227%22 height=%227%22/></svg>')"></i>
+          Dashboard
+        </div>
+        <div class="nav-item" data-page="sessions">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%222%22 y=%222%22 width=%2220%22 height=%228%22 rx=%222%22 ry=%222%22/><rect x=%222%22 y=%2214%22 width=%2220%22 height=%228%22 rx=%222%22 ry=%222%22/><line x1=%226%22 y1=%226%22 x2=%226%22 y2=%226%22/><line x1=%226%22 y1=%2218%22 x2=%226%22 y2=%2218%22/></svg>')"></i>
+          Fleet Orchestration
+        </div>
+        <div class="nav-item" data-page="broadcast">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22m3 11 18-5v12L3 14v-3z%22/><path d=%22M11.6 16.8a3 3 0 1 1-5.8-1.6%22/></svg>')"></i>
+          Broadcast Manager
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Intelligence</div>
+        <div class="nav-item" data-page="aiengine">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M12 2a10 10 0 1 0 10 10H12V2Z%22/><path d=%22M12 12L2.1 12.1%22/><path d=%22M12 12l9.9-0.1%22/><path d=%22M12 12V2.1%22/><path d=%22M12 12v9.9%22/><path d=%22m12 12 7-7%22/><path d=%22m12 12-7 7%22/></svg>')"></i>
+          AI Neural Engine
+        </div>
+        <div class="nav-item" data-page="autoreply">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z%22/></svg>')"></i>
+          Auto-Reply Hub
+        </div>
+        <div class="nav-item" data-page="scheduler">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%223%22 y=%224%22 width=%2218%22 height=%2218%22 rx=%222%22 ry=%222%22/><line x1=%2216%22 y1=%222%22 x2=%2216%22 y2=%226%22/><line x1=%228%22 y1=%222%22 x2=%228%22 y2=%226%22/><line x1=%223%22 y1=%2210%22 x2=%2221%22 y2=%2210%22/></svg>')"></i>
+          Task Scheduler
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Management</div>
+        <div class="nav-item" data-page="commands">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%224 17 10 11 4 5%22/><line x1=%2212%22 y1=%2219%22 x2=%2220%22 y2=%2219%22/></svg>')"></i>
+          Command Matrix
+        </div>
+        <div class="nav-item" data-page="groups">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2%22/><circle cx=%229%22 cy=%227%22 r=%224%22/><path d=%22M23 21v-2a4 4 0 0 0-3-3.87%22/><path d=%22M16 3.13a4 4 0 0 1 0 7.75%22/></svg>')"></i>
+          Group Control
+        </div>
+        <div class="nav-item" data-page="users_db">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2%22/><circle cx=%2212%22 cy=%227%22 r=%224%22/></svg>')"></i>
+          User Database
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">System</div>
+        <div class="nav-item" data-page="viewonce_gallery">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z%22/><circle cx=%2212%22 cy=%2212%22 r=%223%22/></svg>')"></i>
+          View Once Gallery
+        </div>
+        <div class="nav-item" data-page="files">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z%22/><polyline points=%2213 2 13 9 20 9%22/></svg>')"></i>
+          File Manager
+        </div>
+        <div class="nav-item" data-page="logs">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z%22/><polyline points=%2214 2 14 8 20 8%22/><line x1=%2216%22 y1=%2213%22 x2=%228%22 y2=%2213%22/></svg>')"></i>
+          Live Activity
+        </div>
+        <div class="nav-item" data-page="settings">
+          <i class="ic" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%223%22/><path d=%22M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z%22/></svg>')"></i>
+          Settings
+        </div>
+      </div>
+    </div>
+    <div class="sb-footer">
+      <div class="avatar" id="userAvatar">A</div>
+      <div class="info">
+        <div class="uname" id="userName">admin</div>
+        <div class="role">Administrator</div>
+      </div>
+    </div>
+  </div>
+  <div class="main">
+    <div id="topProgress"></div>
+    <div class="top-bar">
+      <div id="activePageTitle" style="font-weight:700; color:var(--txt-2); font-family:'Space Grotesk'">Dashboard</div>
+      <div class="row" style="gap:15px">
+        <div class="stat-pill">Uptime <b id="topUptime">--</b></div>
+        <div class="stat-pill">RAM <b id="topMem">--</b></div>
+        <div id="botGlobalStatus" class="badge gray">Bot Offline</div>
+        <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+      </div>
+    </div>
+    <div class="content" id="mainContent">
+      <div class="ph">
+        <div class="title">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer"></div>
+
+  <!-- Shared Modals -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal modal-sm">
+      <div class="modal-h"><div class="title" id="confirmTitle">Confirm Action</div></div>
+      <p id="confirmText" style="margin-bottom:24px; color:var(--txt-2); line-height:1.5"></p>
+      <div class="row" style="justify-content:flex-end; gap:12px">
+        <button class="btn btn-secondary" onclick="closeConfirm(false)">Cancel</button>
+        <button class="btn btn-primary" id="confirmOkBtn" onclick="closeConfirm(true)">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="qrModal">
+    <div class="modal modal-sm" style="text-align:center">
+      <div class="modal-h"><div class="title" id="qrModalTitle">Link Device</div></div>
+      <p id="qrModalSub" style="color:var(--txt-3); font-size:0.8rem; margin-bottom:20px"></p>
+      <div id="qrModalImg" style="margin: 0 auto 20px; width:250px; height:250px; background:white; padding:10px; border-radius:12px; display:flex; align-items:center; justify-content:center"></div>
+      <div id="qrModalPair" style="display:none">
+        <div id="qrModalPairCode" style="font-family:'JetBrains Mono',monospace; font-size:2rem; font-weight:800; letter-spacing:4px; padding:20px; background:rgba(255,255,255,0.05); border-radius:12px; margin-bottom:20px; color:var(--brand)"></div>
+      </div>
+      <button class="btn btn-secondary" onclick="closeModal('qrModal')">Close</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="addSessionModal">
+    <div class="modal modal-sm">
+      <div class="modal-h"><div class="title">Add Sub-Bot</div></div>
+      <div class="field">
+        <label>Unique Session ID</label>
+        <input class="input" id="newSessId" placeholder="e.g. sales-bot-1" />
+      </div>
+      <div class="tabs mb-3" style="display:flex; gap:10px; border-bottom:1px solid var(--line); padding-bottom:10px">
+        <div class="tab active" onclick="switchAddMode('qr')" style="cursor:pointer; font-size:0.8rem; font-weight:700">QR CODE</div>
+        <div class="tab" onclick="switchAddMode('pair')" style="cursor:pointer; font-size:0.8rem; font-weight:700">PAIR CODE</div>
+      </div>
+      <div id="addModePair" style="display:none">
+        <div class="field">
+          <label>Phone Number</label>
+          <input class="input" id="newSessPhone" placeholder="947..." />
+        </div>
+      </div>
+      <div class="row" style="justify-content:flex-end; gap:10px; margin-top:20px">
+        <button class="btn btn-secondary" onclick="closeModal('addSessionModal')">Cancel</button>
+        <button class="btn btn-primary" id="confirmAddBtn" onclick="confirmAddSession()">Create Session</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="botSettingsModal">
+    <div class="modal modal-lg">
+      <div class="modal-h">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <div class="title">Bot Orchestration</div>
+            <div id="botSettingsSubtitle" class="text-xs dim"></div>
+          </div>
+          <button class="btn btn-ghost" onclick="closeModal('botSettingsModal')">&times;</button>
+        </div>
+      </div>
+      <div class="bot-settings-shell">
+        <div class="bot-settings-sidebar">
+          <div class="bot-nav-item active" onclick="switchBotTab('general')" data-btab="general">General</div>
+          <div class="bot-nav-item" onclick="switchBotTab('advanced')" data-btab="advanced">Automation</div>
+          <div class="bot-nav-item" onclick="switchBotTab('health')" data-btab="health">Health & Stats</div>
+        </div>
+        <div class="bot-tab-content">
+          <div id="btab-general" class="bot-tab-pane active">
+            <div class="field">
+              <label>Instance Name</label>
+              <input class="input" id="botSetName" onchange="applyBotSetting('name', this.value)" />
+            </div>
+            <div class="field">
+              <label>Command Prefix</label>
+              <input class="input" id="botSetPrefix" maxlength="3" onchange="applyBotSetting('prefix', this.value)" />
+            </div>
+            <div class="grid grid-2">
+              <div class="field">
+                <label>Work Mode</label>
+                <select class="select" id="botSetWorkMode" onchange="applyBotSetting('workMode', this.value)">
+                  <option value="public">Public</option>
+                  <option value="private">Private</option>
+                  <option value="self">Self</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Auto Status</label>
+                <select class="select" id="botSetAutoStatus" onchange="applyBotSetting('autoStatus', this.value === 'true')">
+                  <option value="true">Enabled</option>
+                  <option value="false">Disabled</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div id="btab-advanced" class="bot-tab-pane" style="display:none">
+            <div class="advanced-panel">
+               <div class="control-card">
+                  <span>Auto Read</span>
+                  <span class="switch"><input type="checkbox" id="botSetAutoRead" onchange="applyBotSetting('autoRead', this.checked)" /><span class="slider"></span></span>
+               </div>
+               <div class="control-card">
+                  <span>Auto Typing</span>
+                  <span class="switch"><input type="checkbox" id="botSetAutoTyping" onchange="applyBotSetting('autoTyping', this.checked)" /><span class="slider"></span></span>
+               </div>
+               <div class="control-card">
+                  <span>AI Auto-Reply</span>
+                  <span class="switch"><input type="checkbox" id="botSetAiReply" onchange="applyBotSetting('aiAutoReply', this.checked)" /><span class="slider"></span></span>
+               </div>
+            </div>
+          </div>
+          <div id="btab-health" class="bot-tab-pane" style="display:none">
+            <div class="health-grid">
+               <div class="stat-pro-card">
+                  <div class="lbl">Processed</div>
+                  <div class="val" id="botStatProcessed">0</div>
+               </div>
+               <div class="stat-pro-card">
+                  <div class="lbl">Commands</div>
+                  <div class="val" id="botStatCommands">0</div>
+               </div>
+            </div>
+            <div class="row mt-4" style="gap:10px">
+               <button class="btn btn-warn btn-sm" onclick="runBotModalAction('reconnect')">Restart Instance</button>
+               <button class="btn btn-danger btn-sm" onclick="runBotModalAction('disconnect')">Force Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="/js/core.js"></script>
+  <script>
+    function switchBotTab(tab) {
+      document.querySelectorAll('.bot-nav-item').forEach(el => el.classList.toggle('active', el.dataset.btab === tab));
+      document.querySelectorAll('.bot-tab-pane').forEach(el => el.style.display = el.id === 'btab-' + tab ? 'block' : 'none');
+    }
+    
+    function syncBotSettingsModal(s) {
+      if (!s) return;
+      const set = (id, val) => { const el = document.getElementById(id); if (el) { if (el.type === 'checkbox') el.checked = !!val; else el.value = val; } };
+      set('botSetName', s.name || '');
+      set('botSetPrefix', s.prefix || '.');
+      set('botSetWorkMode', s.workMode || 'public');
+      set('botSetAutoStatus', s.autoStatus !== false ? 'true' : 'false');
+      set('botSetAutoRead', !!s.autoRead);
+      set('botSetAutoTyping', !!s.autoTyping);
+      set('botSetAiReply', !!s.aiAutoReply);
+    }
+    
+    window.switchBotTab = switchBotTab;
+    window.syncBotSettingsModal = syncBotSettingsModal;
+  </script>
+</body>
+</html>

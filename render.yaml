@@ -1,0 +1,30 @@
+# Render.com blueprint
+services:
+  - type: web
+    name: chathu-md-v1-5
+    env: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.0
+      - key: DATA_DIR
+        value: /opt/render/project/src/data
+      - key: ADMIN_USER
+        value: admin
+      - key: ADMIN_PASS
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: BOT_NAME
+        value: Chathu MD
+      - key: PREFIX
+        value: "."
+      - key: WORK_MODE
+        value: public
+    disk:
+      name: chathu-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1

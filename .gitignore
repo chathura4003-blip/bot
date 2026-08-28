@@ -1,0 +1,17 @@
+node_modules/
+session/
+sessions/
+downloads/
+viewonce/
+public/viewonce/
+viewonce-log.json
+.env
+*.log
+debug.log
+db.json
+.jwt_secret
+data/
+upload_to_github.bat
+yt-dlp.exe
+yt-dlp
+.cache/
