@@ -23,6 +23,7 @@ fleetCoordinator._setDb(db);
 const { patchBaileysEncryption, installStreamingUpload } = require('./lib/baileys-streaming-upload');
 const { resolveBaileysVersion } = require('./lib/baileys-compat');
 const { classifyDisconnect, getReconnectDelay } = require('./lib/connection-recovery');
+const { cleanJid, canonicalSender, isOwner } = require('./lib/utils');
 const { LRUCache } = require('lru-cache');
 
 // High-speed in-memory LRU cache for E2EE PreKeys & Signal Keys (prevents disk reads on every message)
@@ -1142,48 +1143,27 @@ async function handleMessages(sock, messageBatch, sessionId = '__main__') {
         const from = msg.key.remoteJid;
         if (from === 'status@broadcast') return;
 
-        let sender = msg.key.participant || msg.key.remoteJid;
+        const rawSender = msg.key.participant || msg.key.remoteJid;
+        const sender = canonicalSender(rawSender, msg);
         const pushName = msg.pushName || null;
 
-        // Resolve JID: Check if this is an LID that needs mapping to a phone number
-        const userDb = db.getObjectCollection('users');
-        let resolvedSender = sender;
-
-        // 1. Check if we have a direct mapping for this LID in the DB
-        if (sender.endsWith('@lid')) {
-            const foundByLid = userDb[sender];
-            if (foundByLid && foundByLid.number) {
-                resolvedSender = foundByLid.number + '@s.whatsapp.net';
-            }
-        }
-
-        // 2. Fallback: Check if the LID string itself IS the phone number (common for some users)
-        if (resolvedSender.endsWith('@lid')) {
-            const potentialNum = resolvedSender.split('@')[0];
-            if (potentialNum.length >= 10 && !isNaN(potentialNum)) {
-                resolvedSender = potentialNum + '@s.whatsapp.net';
-            }
-        }
-
-        // Apply global owner override
-        if (sender === '269922018025553@lid') resolvedSender = '94742514900@s.whatsapp.net';
-
-        // Automaticaly update user metadata (Name and Last Seen) with throttling
+        // Automatically update user metadata (Name and Last Seen) with throttling
         if (sender && sender !== 'status@broadcast') {
+            const userDb = db.getObjectCollection('users');
             const existingUser = userDb[sender];
             const now = Date.now();
             const lastSeenTs = existingUser?.lastSeen ? new Date(existingUser.lastSeen).getTime() : 0;
             if (!existingUser || (now - lastSeenTs > 60000) || (pushName && existingUser.pushName !== pushName)) {
                 const updateData = {
                     lastSeen: new Date().toISOString(),
-                    number: (resolvedSender || sender).split('@')[0]
+                    number: sender.split('@')[0]
                 };
                 if (pushName) updateData.pushName = pushName;
 
-                // Save to both identifiers to ensure future mapping works
                 db.update('users', sender, updateData);
-                if (resolvedSender !== sender) {
-                    db.update('users', resolvedSender, updateData);
+                const rawCleaned = cleanJid(rawSender);
+                if (rawCleaned && rawCleaned !== sender) {
+                    db.update('users', rawCleaned, updateData);
                 }
             }
         }
@@ -1193,12 +1173,11 @@ async function handleMessages(sock, messageBatch, sessionId = '__main__') {
             msg.message.imageMessage?.caption ||
             msg.message.videoMessage?.caption || '';
 
-        // Check ownership using both the raw sender and the resolved identity
+        // Fast O(1) ownership check
         const isUserOwner = msg.key.fromMe ||
-            require('./lib/utils').isOwner(sender, owner) ||
-            require('./lib/utils').isOwner(resolvedSender, owner) ||
-            (userDb[sender]?.isOwner) ||
-            (userDb[resolvedSender]?.isOwner);
+            isOwner(sender, owner) ||
+            isOwner(rawSender, owner) ||
+            (db.getObjectCollection('users')[sender]?.isOwner);
 
         if (!botEnabled) {
             // If bot is disabled, ignore everything EXCEPT owner running system commands (.on, .settings)
