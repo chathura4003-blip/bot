@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cloud Drive Leech - Movies & Media</title>
+  <meta name="theme-color" content="#0a0c10">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/app.css">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body class="dark-theme">
+  <!-- Top App Bar -->
+  <header class="app-header">
+    <div class="logo-area">
+      <div class="logo-icon"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+      <div>
+        <h1 class="app-title">Cloud Drive Leech</h1>
+        <span class="app-tagline">Cloud ➔ Google Drive Downloader</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div id="driveStatusBadge" class="status-badge checking">
+        <span class="status-dot"></span>
+        <span class="status-text">Checking Drive...</span>
+      </div>
+      <button id="btnSettings" class="icon-btn" title="Settings"><i class="fa-solid fa-gear"></i></button>
+    </div>
+  </header>
+
+  <!-- Main Scrollable Body Area -->
+  <main class="app-body">
+    
+    <!-- 1. Movies Tab View -->
+    <section id="view-movies" class="tab-view active">
+      <div class="search-header">
+        <div class="search-box">
+          <i class="fa-solid fa-film search-icon"></i>
+          <input type="text" id="movieSearchInput" placeholder="Search Sinhala Sub, English, Hindi Movies..." autocomplete="off">
+          <button id="btnSearchMovie" class="btn-action"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+        </div>
+        <div class="quick-tags">
+          <span class="tag-pill active" data-q="2024">Trending 2024</span>
+          <span class="tag-pill" data-q="Action">Action</span>
+          <span class="tag-pill" data-q="Sinhala">Sinhala Sub</span>
+          <span class="tag-pill" data-q="Tamil">Tamil / Hindi</span>
+          <span class="tag-pill" data-q="Marvel">Marvel</span>
+        </div>
+      </div>
+
+      <div id="movieLoading" class="loading-spinner hidden">
+        <div class="spinner"></div>
+        <p>Searching movie databases & resolving direct sources...</p>
+      </div>
+
+      <div id="movieGrid" class="cards-grid">
+        <!-- Dynamic Movie Cards -->
+      </div>
+    </section>
+
+    <!-- 2. Direct Media Tab View -->
+    <section id="view-media" class="tab-view">
+      <div class="media-box-card">
+        <div class="media-box-header">
+          <div class="media-icon-badge"><i class="fa-solid fa-bolt"></i></div>
+          <div>
+            <h2>Universal Media Downloader</h2>
+            <p>Paste YouTube, Facebook, TikTok, Instagram, Mega, PixelDrain, or Direct .mp4/.mkv links</p>
+          </div>
+        </div>
+        <div class="url-input-container">
+          <input type="url" id="mediaUrlInput" placeholder="Paste media URL here (e.g. YouTube, TikTok, Direct MP4)..." autocomplete="off">
+          <button id="btnExtractMedia" class="btn-action"><i class="fa-solid fa-wand-magic-sparkles"></i> Extract</button>
+        </div>
+
+        <div id="mediaLoading" class="loading-spinner hidden">
+          <div class="spinner"></div>
+          <p>Extracting stream formats and cloud download sources...</p>
+        </div>
+
+        <div id="mediaResultCard" class="media-result-card hidden">
+          <div class="media-info-row">
+            <img id="mediaThumb" src="" alt="Thumbnail" class="media-thumbnail">
+            <div class="media-details">
+              <h3 id="mediaTitle">Media Title</h3>
+              <p id="mediaMeta" class="media-meta"><i class="fa-solid fa-clock"></i> <span id="mediaDuration">--</span></p>
+            </div>
+          </div>
+
+          <div class="formats-list-title">Select Quality / Format to Send to Drive:</div>
+          <div id="mediaFormatsGrid" class="formats-grid">
+            <!-- Dynamic Format Pills -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 18+ Adult Tab View (YouTube Style Experience) -->
+    <section id="view-adult" class="tab-view">
+      
+      <!-- Mode A: YouTube-style Video Watch Page -->
+      <div id="adultWatchView" class="adult-watch-view hidden">
+        <div class="watch-back-bar">
+          <button id="btnBackToAdultBrowse" class="btn-back-yt">
+            <i class="fa-solid fa-arrow-left"></i> Back to 18+ Feed
+          </button>
+          <span id="adultWatchSourceBadge" class="watch-src-pill">Pornhub</span>
+        </div>
+
+        <!-- Sticky In-Page 16:9 Video Player -->
+        <div class="yt-player-container">
+          <div class="video-wrapper">
+            <iframe id="adultIframePlayer" class="hidden" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" allowfullscreen frameborder="0"></iframe>
+            <video id="adultHtmlVideoPlayer" controls autoplay playsinline class="hidden"></video>
+          </div>
+        </div>
+
+        <!-- Video Info & YouTube Action Bar -->
+        <div class="yt-video-details">
+          <h2 id="adultWatchTitle" class="yt-video-title">Video Title</h2>
+          <div class="yt-video-submeta">
+            <span id="adultWatchDuration"><i class="fa-solid fa-clock"></i> HD</span>
+            <span>•</span>
+            <span id="adultWatchRating"><i class="fa-solid fa-star" style="color: #f1c40f;"></i> 1080p Full HD</span>
+          </div>
+
+          <!-- YouTube Quality / Resolution Picker -->
+          <div id="adultQualityRow" class="yt-quality-row">
+            <div class="quality-label"><i class="fa-solid fa-sliders" style="color: var(--accent-cyan);"></i> Resolution / Quality:</div>
+            <div id="adultQualityPills" class="quality-pills-container">
+              <!-- Dynamically populated e.g. [1080p Full HD] [720p HD] [480p] [Auto] -->
+            </div>
+          </div>
+
+          <!-- YouTube Action Buttons Row -->
+          <div class="yt-action-bar">
+            <button id="btnAdultWatchDrive" class="yt-action-btn primary" title="Upload directly to Google Drive">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Upload Drive</span>
+            </button>
+            <button id="btnAdultWatchDownload" class="yt-action-btn" title="Download MP4 to Device">
+              <i class="fa-solid fa-download"></i>
+              <span>Download</span>
+            </button>
+            <button id="btnAdultWatchCopy" class="yt-action-btn" title="Copy Stream Link">
+              <i class="fa-solid fa-link"></i>
+              <span>Copy Link</span>
+            </button>
+            <a id="btnAdultWatchSource" href="#" target="_blank" class="yt-action-btn" title="Open Source Website">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              <span>Source</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- YouTube-style Up Next / Related Videos Section -->
+        <div class="yt-related-section">
+          <div class="yt-related-header">
+            <h3><i class="fa-solid fa-layer-group" style="color: var(--accent-magenta);"></i> Up Next / Related Videos</h3>
+          </div>
+          <div id="adultRelatedFeed" class="yt-related-feed">
+            <!-- Dynamic related YouTube-style items -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode B: YouTube-style Browse Feed -->
+      <div id="adultBrowseView" class="adult-browse-view">
+        <div class="adult-header">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass search-icon" style="color: #ff4757;"></i>
+            <select id="adultSourceSelect" class="source-select">
+              <option value="all">🌐 All Websites</option>
+              <option value="pornhub">🔥 Pornhub</option>
+              <option value="xvideos">🔞 XVideos</option>
+              <option value="xnxx">💎 XNXX</option>
+              <option value="eporner">🌟 Eporner (4K)</option>
+              <option value="redtube">🎬 RedTube</option>
+            </select>
+            <input type="text" id="adultSearchInput" placeholder="Search 18+ videos or paste adult URL..." autocomplete="off">
+            <button id="btnSearchAdult" class="btn-action btn-danger"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+          </div>
+
+          <div class="source-pill-bar">
+            <span class="source-pill active" data-src="all"><i class="fa-solid fa-globe"></i> All Sites</span>
+            <span class="source-pill" data-src="pornhub"><i class="fa-solid fa-fire"></i> Pornhub</span>
+            <span class="source-pill" data-src="xvideos"><i class="fa-solid fa-play"></i> XVideos</span>
+            <span class="source-pill" data-src="xnxx"><i class="fa-solid fa-gem"></i> XNXX</span>
+            <span class="source-pill" data-src="eporner"><i class="fa-solid fa-star"></i> Eporner</span>
+            <span class="source-pill" data-src="redtube"><i class="fa-solid fa-video"></i> RedTube</span>
+          </div>
+
+          <div class="quick-tags">
+            <span class="tag-pill active" data-q="popular">🔥 Trending</span>
+            <span class="tag-pill" data-q="japanese">🌸 Japanese</span>
+            <span class="tag-pill" data-q="amateur">💃 Amateur</span>
+            <span class="tag-pill" data-q="4k">👑 4K Ultra HD</span>
+            <span class="tag-pill" data-q="romance">💋 Romance</span>
+            <span class="tag-pill" data-q="hardcore">💥 Hardcore</span>
+            <span class="tag-pill" data-q="teen">✨ Top Rated</span>
+          </div>
+        </div>
+
+        <div id="adultLoading" class="loading-spinner hidden">
+          <div class="spinner"></div>
+          <p>Fetching adult streams...</p>
+        </div>
+
+        <div id="adultGrid" class="yt-video-feed">
+          <!-- Dynamic YouTube-style Adult Video Cards -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 4. Direct Downloads Tab View (Pause / Resume / Delete / Stream) -->
+    <section id="view-downloads" class="tab-view">
+      <div class="tasks-header">
+        <div class="section-title">
+          <h2><i class="fa-solid fa-circle-down"></i> Direct Download Manager</h2>
+          <p>Pause, resume, and manage direct files with FilesPayouts & video support</p>
+        </div>
+      </div>
+
+      <div class="extractor-card" style="margin-bottom: 20px;">
+        <div class="url-input-container">
+          <input type="text" id="directDownloadInput" placeholder="Paste any direct link, FilesPayouts.com, or media URL..." autocomplete="off">
+          <button id="btnStartDirectDownload" class="btn-action" style="white-space: nowrap;"><i class="fa-solid fa-download"></i> Start Download</button>
+        </div>
+      </div>
+
+      <div id="downloadsList" class="tasks-list">
+        <div class="empty-state" id="emptyDownloads">
+          <i class="fa-solid fa-download"></i>
+          <h3>No Direct Downloads</h3>
+          <p>Paste any URL (FilesPayouts, MP4, MKV, or Media) above or click [Download] on any card.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Active Tasks Tab View -->
+    <section id="view-tasks" class="tab-view">
+      <div class="tasks-header">
+        <div class="section-title">
+          <h2><i class="fa-solid fa-arrows-rotate"></i> Active Cloud Transfers</h2>
+          <p>Real-time downloads & Google Drive uploads</p>
+        </div>
+        <button id="btnClearTasks" class="btn-secondary"><i class="fa-solid fa-trash-can"></i> Clear Done</button>
+      </div>
+
+      <div id="tasksList" class="tasks-list">
+        <div class="empty-state" id="emptyTasks">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <h3>No Active Cloud Transfers</h3>
+          <p>Search movies or paste media links to initiate instant transfers.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Google Drive Library Tab View (2026 Modern Edition) -->
+    <section id="view-drive" class="tab-view">
+      <!-- Drive Account Status / Connect Card -->
+      <div class="drive-account-card" id="driveAccountCard">
+        <!-- State A: Not Connected Hero Banner -->
+        <div id="driveDisconnectedView" class="drive-connect-hero">
+          <div class="drive-hero-icon">
+            <i class="fa-brands fa-google-drive"></i>
+          </div>
+          <div class="drive-hero-text">
+            <h3>Connect with Google Account</h3>
+            <p>Link your personal Google Drive to automatically transfer movies, media, and 18+ content with 0 device storage used.</p>
+          </div>
+          <button id="btnGoogleSignInDirect" class="btn-google-auth-2026">
+            <svg class="google-g-svg" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Sign in with Google</span>
+          </button>
+        </div>
+
+        <!-- State B: Connected User Dashboard -->
+        <div id="driveConnectedView" class="drive-user-dashboard hidden">
+          <div class="drive-user-top">
+            <div class="drive-user-profile">
+              <div class="drive-avatar-2026" id="driveAvatar">
+                <i class="fa-brands fa-google-drive"></i>
+              </div>
+              <div class="drive-user-meta">
+                <div class="drive-name-row">
+                  <span class="drive-user-name" id="driveUserName">Google Account</span>
+                  <span class="badge-connected"><i class="fa-solid fa-circle-check"></i> Connected</span>
+                </div>
+                <div class="drive-user-email" id="driveUserEmail">user@gmail.com</div>
+              </div>
+            </div>
+            <div class="drive-dashboard-actions">
+              <button id="btnRefreshDrive" class="btn-secondary btn-icon" title="Refresh Files"><i class="fa-solid fa-rotate-right"></i></button>
+              <button id="btnSettingsDrive" class="btn-secondary btn-icon" title="Settings"><i class="fa-solid fa-gear"></i></button>
+              <button id="btnDisconnectDrive" class="btn-secondary btn-icon danger" title="Sign Out / Disconnect"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+            </div>
+          </div>
+
+          <!-- Storage Meter Progress -->
+          <div class="drive-storage-section">
+            <div class="storage-info-row">
+              <span><i class="fa-solid fa-cloud"></i> Google Drive Storage</span>
+              <span id="driveStorageText" class="storage-val">0 GB of 15 GB used</span>
+            </div>
+            <div class="storage-track-2026">
+              <div class="storage-bar-fill" id="driveStorageFill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <!-- Auto Folder Status Badge -->
+          <div class="auto-folder-banner">
+            <i class="fa-solid fa-folder-circle-check" style="color: var(--accent-cyan);"></i>
+            <span>Upload Destination: <strong>📁 Cloud Media Downloads</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="drive-library-header">
+        <div class="section-title">
+          <h2><i class="fa-solid fa-folder-open"></i> Cloud Files in Drive</h2>
+          <p>Stream directly online or download with resume support via IDM/ADM</p>
+        </div>
+      </div>
+
+      <div id="driveLoading" class="loading-spinner hidden">
+        <div class="spinner"></div>
+        <p>Loading files from Google Drive...</p>
+      </div>
+
+      <div id="driveFilesGrid" class="drive-files-grid">
+        <!-- Dynamic Drive File Items -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="movies">
+      <i class="fa-solid fa-film"></i>
+      <span>Movies</span>
+    </button>
+    <button class="nav-item" data-tab="media">
+      <i class="fa-solid fa-bolt"></i>
+      <span>Media</span>
+    </button>
+    <button class="nav-item" data-tab="adult">
+      <i class="fa-solid fa-fire"></i>
+      <span>18+ Hub</span>
+    </button>
+    <button class="nav-item" data-tab="downloads">
+      <div class="nav-badge-wrapper">
+        <i class="fa-solid fa-circle-down"></i>
+        <span id="navDownloadsBadge" class="nav-badge hidden">0</span>
+      </div>
+      <span>Downloads</span>
+    </button>
+    <button class="nav-item" data-tab="tasks">
+      <div class="nav-badge-wrapper">
+        <i class="fa-solid fa-arrows-rotate"></i>
+        <span id="navTaskBadge" class="nav-badge hidden">0</span>
+      </div>
+      <span>Transfers</span>
+    </button>
+    <button class="nav-item" data-tab="drive">
+      <i class="fa-brands fa-google-drive"></i>
+      <span>Drive</span>
+    </button>
+  </nav>
+
+  <!-- Movie Details Modal -->
+  <div id="movieModal" class="modal-overlay hidden">
+    <div class="modal-content glass-card">
+      <button class="modal-close" id="btnCloseMovieModal"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-movie-layout">
+        <img id="modalMoviePoster" src="" alt="Poster" class="modal-poster">
+        <div class="modal-movie-info">
+          <h2 id="modalMovieTitle">Movie Title</h2>
+          <p id="modalMovieSynopsis" class="modal-synopsis">Loading details...</p>
+          
+          <div class="qualities-section">
+            <h4>Available Download Qualities (Upload to Drive):</h4>
+            <div id="modalQualitiesList" class="qualities-list">
+              <!-- Dynamic Quality Buttons -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Stream Player Modal -->
+  <div id="playerModal" class="modal-overlay hidden">
+    <div class="modal-content glass-card player-modal-content">
+      <div class="player-header">
+        <div class="player-title-box">
+          <i class="fa-solid fa-circle-play" style="color: var(--accent-cyan);"></i>
+          <h3 id="playerTitle" class="player-title">Playing Video</h3>
+        </div>
+        <button class="modal-close" id="btnClosePlayer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="video-wrapper">
+        <iframe id="iframeVideoPlayer" class="hidden" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" frameborder="0"></iframe>
+        <video id="htmlVideoPlayer" controls autoplay playsinline class="hidden"></video>
+      </div>
+      <div class="player-footer">
+        <span id="playerSourceInfo" class="player-source-info">Live Stream</span>
+        <div class="player-footer-actions">
+          <button id="playerUploadDriveBtn" class="btn-action" style="padding: 6px 12px; font-size: 0.78rem; background: var(--grad-primary); color: #000;">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Drive
+          </button>
+          <a id="playerDirectDownload" href="#" class="btn-action" style="padding: 6px 12px; font-size: 0.78rem;" download>
+            <i class="fa-solid fa-download"></i> Download File
+          </a>
+        </div>
+      </div>
+
+      <!-- YouTube-style Related Videos Feed -->
+      <div id="playerRelatedSection" class="player-related-section">
+        <div class="related-header">
+          <h4><i class="fa-solid fa-layer-group" style="color: var(--accent-magenta);"></i> Up Next / Related Videos</h4>
+        </div>
+        <div id="playerRelatedGrid" class="player-related-grid">
+          <!-- Dynamic related videos -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings & Google Account Link Modal (2026 Clean Design) -->
+  <div id="settingsModal" class="modal-overlay hidden">
+    <div class="modal-content glass-card settings-modal-content">
+      <button class="modal-close" id="btnCloseSettings"><i class="fa-solid fa-xmark"></i></button>
+      
+      <div class="settings-modal-header">
+        <div class="settings-gdrive-badge"><i class="fa-brands fa-google-drive"></i></div>
+        <div>
+          <h2>Google Account Link</h2>
+          <p class="settings-desc">Sign in with your Google account to enable instant background cloud transfers.</p>
+        </div>
+      </div>
+
+      <!-- Main Sign In Button -->
+      <div class="google-auth-box">
+        <button id="btnGoogleSignInAction" type="button" class="btn-google-auth-2026 full-width">
+          <svg class="google-g-svg" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+      </div>
+
+      <!-- Optional Custom Credentials Accordion -->
+      <details class="advanced-settings-accordion">
+        <summary><i class="fa-solid fa-sliders"></i> Advanced Credentials (Optional)</summary>
+        
+        <div class="advanced-settings-body">
+          <div class="settings-form-block">
+            <label>Google Cloud Client ID:</label>
+            <input type="text" id="oauthClientId" placeholder="Custom Client ID (Optional)">
+          </div>
+
+          <div class="settings-form-block">
+            <label>Google Cloud Client Secret:</label>
+            <input type="password" id="oauthClientSecret" placeholder="Custom Client Secret (Optional)">
+          </div>
+
+          <div class="settings-form-block">
+            <label><i class="fa-solid fa-bolt"></i> Or Instant Refresh Token (1//04...):</label>
+            <input type="text" id="customRefreshToken" placeholder="Paste 1//04... refresh token here">
+          </div>
+
+          <div class="settings-form-block">
+            <label>Or Service Account Key (JSON):</label>
+            <div class="file-dropzone" id="saDropzone">
+              <i class="fa-solid fa-file-arrow-up drop-icon"></i>
+              <p>Drag & Drop <code>service-account.json</code> file</p>
+              <input type="file" id="saFileInput" accept=".json" style="display: none;">
+            </div>
+            <textarea id="saJsonInput" rows="3" placeholder='{ "type": "service_account", ... }' style="margin-top: 8px;"></textarea>
+          </div>
+
+          <div class="settings-form-block">
+            <label>Destination Folder ID (Optional):</label>
+            <input type="text" id="driveFolderIdInput" placeholder="root (App creates 'Cloud Media Downloads' automatically)">
+          </div>
+
+          <button id="btnSaveCustomCreds" type="button" class="btn-secondary" style="width: 100%; margin-top: 10px;">
+            <i class="fa-solid fa-floppy-disk"></i> Save Custom Credentials
+          </button>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
