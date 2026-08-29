@@ -26,6 +26,10 @@ const { setupWorkerRoutes } = require('./lib/cloud-worker');
 
 const app = express();
 app.set('trust proxy', String(process.env.TRUST_PROXY || '').toLowerCase() === 'true');
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+setupWorkerRoutes(app);
+
 const server = http.createServer(app);
 let dashboardStarted = false;
 const LOGIN_WINDOW_MS = 5 * 60 * 1000;
